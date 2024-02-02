@@ -12,7 +12,7 @@ import "./index.css";
 import "./chess-controls.css";
 
 let chessboard = document.getElementById("chessboard");
-let gameController = new GameController(chessboard!, "start", "none", onGameStart, onMoveStart, onGameEnd);
+let gameController = new GameController(chessboard!, "start", "none", onGameStartCallback, onMoveStartCallback, onGameEndCallback);
 
 let gameHeader: HTMLElement = document.getElementById("game-header")!;
 let blackPlayerInfo: HTMLElement = document.getElementById("black-player")!;
@@ -28,6 +28,14 @@ storedGames = storedGames.filter(game => game.moveText!.indexOf("=") > -1);
 let gameMenuItems: GameMenuItem[] = Conversion.storedGamesToGameMenuItems(storedGames);
 listInMenu(gameMenuItems);
 
+let skipStartIcon = document.getElementById("skip-start") as HTMLImageElement;
+skipStartIcon.src = Icons.skipStart;
+skipStartIcon.onclick = onSkipStartClick;
+
+let skipPreviousIcon = document.getElementById("skip-previous") as HTMLImageElement;
+skipPreviousIcon.src = Icons.skipPrevious;
+skipPreviousIcon.onclick = onSkipPreviousClick;
+
 let pauseIcon = document.getElementById("pause") as HTMLImageElement;
 pauseIcon.src = Icons.pause;
 pauseIcon.onclick = onPauseClick;
@@ -36,7 +44,39 @@ let playIcon = document.getElementById("play") as HTMLImageElement;
 playIcon.src = Icons.play;
 playIcon.onclick = onPlayClick;
 
-function onGameStart(game:Game, score:number, captures:Record<string, number>, pieceUrl:Record<string,string>){
+let skipNextIcon = document.getElementById("skip-next") as HTMLImageElement;
+skipNextIcon.src = Icons.skipNext;
+skipNextIcon.onclick = onSkipNextClick;
+
+let skipEndIcon = document.getElementById("skip-end") as HTMLImageElement;
+skipEndIcon.src = Icons.skipEnd;
+skipEndIcon.onclick = onSkipEndClick;
+
+
+function onSkipStartClick(){
+
+}
+function onSkipPreviousClick(){
+    gameController.skipPrevious();
+}
+function onSkipNextClick(){
+
+}
+function onSkipEndClick(){
+
+}
+function onPlayClick(){
+    playIcon.style.display = "none";
+    pauseIcon.style.display = "inline";
+    gameController.startPlaylist();
+}
+function onPauseClick(){
+    playIcon.style.display = "inline";
+    pauseIcon.style.display = "none";
+    gameController.pausePlaylist();
+}
+
+function onGameStartCallback(game:Game, score:number, captures:Record<string, number>, pieceUrl:Record<string,string>){
     //Callback implemented via constructor on GameController further above
     log.innerHTML = "";
     if (whitePlayerInfo && blackPlayerInfo)
@@ -71,7 +111,7 @@ function onGameStart(game:Game, score:number, captures:Record<string, number>, p
         gameHeader.innerHTML = text;
     }
 }
-function onMoveStart(move:Move){
+function onMoveStartCallback(move:Move){
     //Callback implemented via constructor on GameController further above
     let turnNumber = Math.ceil(move.number / 2);
     let isNewTurn = move.number % 2 !== 0;
@@ -91,19 +131,9 @@ function onMoveStart(move:Move){
     logItem.innerHTML = logText + " ";
     log.appendChild(logItem);
 }
-function onGameEnd(game:Game){
+function onGameEndCallback(game:Game){
     //Callback implemented via constructor on GameController further above
     console.log("Game ended");
-}
-function onPlayClick(){
-    playIcon.style.display = "none";
-    pauseIcon.style.display = "block";
-    gameController.startPlaylist();
-}
-function onPauseClick(){
-    playIcon.style.display = "block";
-    pauseIcon.style.display = "none";
-    gameController.pausePlaylist();
 }
 function onGameMenuItemClick(event:MouseEvent){
     let element = event.currentTarget as HTMLElement;

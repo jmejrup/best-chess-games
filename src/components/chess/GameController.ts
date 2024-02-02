@@ -38,6 +38,24 @@ export class GameController{
         clearTimeout(this.animationTimeoutId);
         clearTimeout(this.autoplayTimeoutId);
     }
+    goToThisMoveInPlaylist(moveIndex:number){
+        if (this.playlist){
+            let game = this.playlist.games[this.playlist.gameIndex];
+            let move = game.moves[moveIndex];
+
+        }
+    }
+    skipStart(){
+        if (this.playlist){
+            this.stopTimers();
+            
+        }
+    }
+    skipPrevious(){
+        let chess = this.playlist?.chess;
+        let history = chess?.history({verbose:true});
+        debugger;
+    }
     startPlaylist(){
         if (this.playlist){
             this.playlist.isPaused = false;
