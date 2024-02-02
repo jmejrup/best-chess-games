@@ -24,10 +24,26 @@ let input = document.getElementById("file-upload") as HTMLInputElement;
 let pgnGames: PGNGame[] | undefined;
 
 let storedGames = json.games as StoredGame[];
+storedGames = storedGames.filter(game => game.moveText!.indexOf("=") > -1);
 let gameMenuItems: GameMenuItem[] = Conversion.storedGamesToGameMenuItems(storedGames);
-
 listInMenu(gameMenuItems);
 
+let pauseIcon = document.getElementById("pause") as HTMLImageElement;
+pauseIcon.src = Icons.pause;
+pauseIcon.onclick = onPauseClick;
+
+let playIcon = document.getElementById("play") as HTMLImageElement;
+playIcon.src = Icons.play;
+playIcon.onclick = onPlayClick;
+
+function onPauseClick(){
+    playIcon.style.display = "block";
+    pauseIcon.style.display = "none";
+}
+function onPlayClick(){
+    playIcon.style.display = "none";
+    pauseIcon.style.display = "block";
+}
 input.addEventListener("change", () =>{
     const reader = new FileReader();
     reader.addEventListener("load", () => {
@@ -37,7 +53,7 @@ input.addEventListener("change", () =>{
                 pgnGames = PGNReader.readPGNFile(text);
                 if (pgnGames){
                     pgnGames.reverse();
-                    // pgnGames = list.filter(pgn => pgn.moveText.indexOf("=") > -1);
+                    // pgnGames = pgnGames.filter(pgn => pgn.moveText!.indexOf("=") > -1);
                     gameMenuItems = Conversion.pgnToGameMenuItem(pgnGames);
                     gameMenuItems.sort((a,b) => b.date.localeCompare(a.date));
                     listInMenu(gameMenuItems);

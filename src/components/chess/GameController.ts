@@ -22,22 +22,9 @@ export class GameController{
     setFen(fen:string){
         this.chessboard.setFen(fen);
     }
-    private getCastlingInfo(fenChar:string, from:string, to:string)
-    {
-        if (fenChar === "K" && from === "e1"){
-            if (to === "g1")
-                return {isCastling:true, rookFrom:"h1", rookTo:"f1"};
-            else if (to === "c1")
-                return {isCastling:true, rookFrom:"a1", rookTo:"d1"};
-        }
-        else if (fenChar === "k" && from === "e8")
-        {
-            if (to === "g8")
-                return {isCastling:true, rookFrom:"h8", rookTo:"f8"};
-            else if (to === "c8")
-                return {isCastling:true, rookFrom:"a8", rookTo:"d8"};
-        }
-        return {isCastling:false}
+    cancelCurrentAutoplay(){
+        clearTimeout(this.animationTimeoutId);
+        clearTimeout(this.autoplayTimeoutId);
     }
     showGames(games:Game[], index: number, onGameStartCallback: Function, onMoveStartCallback:Function, onGameEndCallback: Function){
         this.cancelCurrentAutoplay();
@@ -138,11 +125,6 @@ export class GameController{
                     move.piece.style.top = "";
                     move.piece.classList.remove("dragging");
                 });
-                // let promotion: string | undefined;
-                // let indexOfPromotionChar = move.indexOf("=");
-                // if (indexOfPromotionChar > -1){
-                //     promotion = move.substring(indexOfPromotionChar + 1, indexOfPromotionChar + 2);
-                // }
                 this.move(move.from, move.to, move.promotion);//this function will take care of castling so we don't need to call it for the rook
                 onAnimationEndCallback();
             }, { once: true });
@@ -150,7 +132,7 @@ export class GameController{
     }
     /** Example 1 - from: "e2" to: "e4" Example 2:  from: "a7" to: "a8" promotion: "q" Promotion can be queen (q), bishop (b), knight (n) or rook (r) */
     move(from:string, to: string, promotion?:string){
-        let piece = this.chessboard.squares[from].element.firstChild as HTMLElement;
+        let piece = this.chessboard.squares[from].element.firstChild as HTMLImageElement;
         let fenChar = piece.getAttribute("data-type");
         this.moveSimple(from, to);
         let castlingInfo = this.getCastlingInfo(fenChar!, from, to);
@@ -163,6 +145,7 @@ export class GameController{
             let isWhite = currentFenChar === currentFenChar!.toUpperCase();
             let newFenChar = isWhite ? promotion.toUpperCase() : promotion.toLowerCase();
             piece.setAttribute("data-type", newFenChar);
+            piece.src = this.chessboard.getPieceUrl(newFenChar);
         }
     }
     private moveSimple(from:string, to:string)
@@ -173,8 +156,21 @@ export class GameController{
         targetSquare.appendChild(piece);
         targetSquare.classList.add("target");
     }
-    cancelCurrentAutoplay(){
-        clearTimeout(this.animationTimeoutId);
-        clearTimeout(this.autoplayTimeoutId);
+    private getCastlingInfo(fenChar:string, from:string, to:string)
+    {
+        if (fenChar === "K" && from === "e1"){
+            if (to === "g1")
+                return {isCastling:true, rookFrom:"h1", rookTo:"f1"};
+            else if (to === "c1")
+                return {isCastling:true, rookFrom:"a1", rookTo:"d1"};
+        }
+        else if (fenChar === "k" && from === "e8")
+        {
+            if (to === "g8")
+                return {isCastling:true, rookFrom:"h8", rookTo:"f8"};
+            else if (to === "c8")
+                return {isCastling:true, rookFrom:"a8", rookTo:"d8"};
+        }
+        return {isCastling:false}
     }
 }
