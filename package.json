@@ -1,0 +1,55 @@
+{
+  "name": "best-chess-games",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "firebase": "firebase emulators:start",
+    "watch": "webpack --watch",
+    "start": "webpack serve --open",
+    "server": "node server.js",
+    "build": "webpack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jmejrup/best-chess-games.git"
+  },
+  "keywords": [
+    "chess",
+    "chessboard",
+    "chess-games"
+  ],
+  "author": "Jesper Mejrup",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jmejrup/best-chess-games/issues"
+  },
+  "homepage": "https://github.com/jmejrup/best-chess-games#readme",
+  "dependencies": {
+    "chess.js": "^1.0.0-beta.7",
+    "firebase": "^10.7.2",
+    "firebase-admin": "^12.0.0",
+    "lodash": "^4.17.21"
+  },
+  "devDependencies": {
+    "@minify-html/node": "^0.15.0",
+    "@types/lodash": "^4.14.202",
+    "copy-webpack-plugin": "^12.0.2",
+    "css-loader": "^6.9.1",
+    "express": "^4.18.2",
+    "file-loader": "^6.2.0",
+    "html-loader": "^5.0.0",
+    "html-minimizer-webpack-plugin": "^5.0.0",
+    "html-webpack-plugin": "^5.6.0",
+    "style-loader": "^3.3.4",
+    "svg-chunk-webpack-plugin": "^5.0.0",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.3.3",
+    "url-loader": "^4.1.1",
+    "webpack": "^5.90.0",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-middleware": "^7.0.0",
+    "webpack-dev-server": "^4.15.1"
+  }
+}

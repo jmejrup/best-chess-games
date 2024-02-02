@@ -1,0 +1,35 @@
+body{padding:0;margin:0;background-color:rgb(57,57,57);color:rgb(245, 245, 245);}
+.menu{height:100vh;position:absolute;width:320px;}
+.menu > .top{
+    position:absolute;
+    height:80px;
+    left:0;
+    right:0;
+}
+.menu input[type="file"] { display: none;}
+.menu .custom-file-upload {
+    margin-top:20px;
+    border-radius:8px;
+    border: 1px solid #ccc;
+    display: inline-block;
+    padding: 8px;
+    cursor: pointer;
+    margin-left:12px;
+}
+.menu > #games{position:absolute;top:65px;bottom:0;left:0;right:0;border-radius:2px;background-color:rgb(54,54,54);overflow:hidden;overflow-y:scroll;scrollbar-color:rgb(67,67,67) rgb(57,57,57);}
+.menu > #games > .game{padding:10px 12px;border-radius:8px;cursor:pointer;}
+.menu > #games > .game:hover{background-color:rgb(62,62,62)}
+.chess{margin-left:320px;}
+.chess > .board {float:left;width:49%;margin-top:30px;}
+.chess > .board > .padding{padding:10px 5%;}
+.chess > .board > .padding > #game-header{font-weight: bold;}
+.chess > .board > .padding > #black-player{height:30px;line-height:30px;}
+.chess > .board > .padding > #white-pieces-captured{height:25px;}
+.chess > .board > .padding > #black-pieces-captured{height:25px;}
+.chess > .board > .padding > #white-player{height:30px;line-height:30px;}
+.chess > .controls{width:50%;float:left;margin-top:90px;height:200px;}
+.chess > .controls > #log{padding:0;line-height:22px;}
+@media only screen and (max-width: 750px) {
+    .chess > .board {float:none;width:100%;}
+    .chess > .controls{float:none;width:100%;margin-top:0;}
+}

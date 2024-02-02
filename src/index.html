@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title><%= htmlWebpackPlugin.options.title %></title>
+        <link rel="shortcut icon" href="">
+    </head>
+<body>
+    <div class="menu">
+        <div class="top">
+            <input id="file-upload" type='file'>
+            <label for="file-upload" class="custom-file-upload">
+                Upload Game PGN
+            </label>
+        </div>
+
+        <div id="games">
+
+        </div>
+    </div>
+    <div class="chess">
+        <div class="board">
+            <div class="padding">
+                <div id="game-header">Game header</div>
+                <!-- <div id="white-pieces-captured"></div> -->
+                <div id="black-player">Black</div>
+                <div id="chessboard"></div>
+                <div id="white-player">White</div>
+                <!-- <div id="black-pieces-captured"></div> -->
+            </div>
+        </div>
+        <div class="controls">
+            <div id="log"></div>
+        </div>
+    </div>
+    
+</body>
+</html>
