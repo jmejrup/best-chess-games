@@ -87,7 +87,7 @@ export class Chessboard{
             square.element.className = "square";
         });
     }
-    calculateScoreAndPiecesTakenByFen(fen:string){
+    calculateScoreAndCapturesByFen(fen:string){
         // example: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
         fen = fen.split(" ")[0].split("/").join("");
         // make a record of all types of pieces and set initial count to zero
@@ -107,29 +107,29 @@ export class Chessboard{
         score += (fenChars["R"] - fenChars["r"]) * 5;
         score += (fenChars["Q"] - fenChars["q"]) * 9;
         // we need to return a similar record showing how many pieces have been taken
-        let piecesTaken: Record<string, number> = {};
+        let captures: Record<string, number> = {};
         // we started having 2 rooks, knights and bishops. We could have more due to promotion
         for (const char of ["r", "n", "b", "R", "N", "B"]){
-            piecesTaken[char] = fenChars[char] >= 2 ? 0 : 2 - fenChars[char];
+            captures[char] = fenChars[char] >= 2 ? 0 : 2 - fenChars[char];
         }
         for (const char of ["q", "Q"]){
-            piecesTaken[char] = fenChars[char] > 0 ? 0 : 1;
+            captures[char] = fenChars[char] > 0 ? 0 : 1;
         }
         // Counting taken pawns is difficult due to possible promotion
         let black = {pawn:"p", queen: "q", pieces:["r", "n", "b"]};
         let white = {pawn:"P", queen: "Q", pieces:["R", "N", "B"]};
         for (const player of [black, white])
         {
-            piecesTaken[player.pawn] = 8 - fenChars[player.pawn];
+            captures[player.pawn] = 8 - fenChars[player.pawn];
             if (fenChars[player.queen] > 1){
-                piecesTaken[player.pawn] -= fenChars[player.queen] -1;
+                captures[player.pawn] -= fenChars[player.queen] -1;
             }
             for (const piece of player.pieces){
                 if (fenChars[piece] > 2){
-                    piecesTaken[player.pawn] -= fenChars[piece] -2;
+                    captures[player.pawn] -= fenChars[piece] -2;
                 }
             }
         }
-        return {score, piecesTaken, pieceUrl: this.pieceUrl}
+        return {score, captures, pieceUrl: this.pieceUrl}
     }
 }

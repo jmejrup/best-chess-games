@@ -12,7 +12,7 @@ import "./index.css";
 import "./chess-controls.css";
 
 let chessboard = document.getElementById("chessboard");
-let gameController = new GameController(chessboard!, "start", "both");
+let gameController = new GameController(chessboard!, "start", "none", onGameStart, onMoveStart, onGameEnd);
 
 let gameHeader: HTMLElement = document.getElementById("game-header")!;
 let blackPlayerInfo: HTMLElement = document.getElementById("black-player")!;
@@ -36,13 +36,85 @@ let playIcon = document.getElementById("play") as HTMLImageElement;
 playIcon.src = Icons.play;
 playIcon.onclick = onPlayClick;
 
-function onPauseClick(){
-    playIcon.style.display = "block";
-    pauseIcon.style.display = "none";
+function onGameStart(game:Game, score:number, captures:Record<string, number>, pieceUrl:Record<string,string>){
+    //Callback implemented via constructor on GameController further above
+    log.innerHTML = "";
+    if (whitePlayerInfo && blackPlayerInfo)
+    {
+        // updatePiecesTakenAndScore(score, piecesTaken, pieceUrl);
+        let whitePlayerText:string = game.white || "White";
+        let blackPlayerText:string = game.black || "Black";
+        let result = game.result;
+        if (result === "1-0")
+        whitePlayerText += " (wins)";
+        else if (result === "0-1")
+        {
+            blackPlayerText += " (wins)";
+        }
+        else
+        {
+            whitePlayerText += " (draw)";
+            blackPlayerText += " (draw)";
+        }
+        blackPlayerInfo.innerHTML = blackPlayerText;
+        whitePlayerInfo.innerHTML = whitePlayerText;
+    }
+    if (game.date || game.event || game.round)
+    {
+        let text = "";
+        if (game.date)
+            text = game.date + " ";
+        if (game.event)
+            text += game.event + " "
+        if (game.round)
+            text += "round " + game.round;
+        gameHeader.innerHTML = text;
+    }
+}
+function onMoveStart(move:Move){
+    //Callback implemented via constructor on GameController further above
+    let turnNumber = Math.ceil(move.number / 2);
+    let isNewTurn = move.number % 2 !== 0;
+    let logItem = document.createElement("span");
+    let firstChar = move.notation[0];
+    let logText = isNewTurn ? turnNumber + "." : "";
+    if (firstChar === firstChar.toUpperCase() && firstChar !== "O")
+    {
+        if (move.color === "b"){
+            firstChar = firstChar.toLowerCase();
+        }
+        firstChar = UTF.pieces[firstChar];
+        logText += firstChar + move.notation.substring(1);
+    }
+    else
+        logText += move.notation;
+    logItem.innerHTML = logText + " ";
+    log.appendChild(logItem);
+}
+function onGameEnd(game:Game){
+    //Callback implemented via constructor on GameController further above
+    console.log("Game ended");
 }
 function onPlayClick(){
     playIcon.style.display = "none";
     pauseIcon.style.display = "block";
+    gameController.startPlaylist();
+}
+function onPauseClick(){
+    playIcon.style.display = "block";
+    pauseIcon.style.display = "none";
+    gameController.pausePlaylist();
+}
+function onGameMenuItemClick(event:MouseEvent){
+    let element = event.currentTarget as HTMLElement;
+    let index = [...element.parentNode!.children].indexOf(element);
+    let gameMenuItem = gameMenuItems[index];
+    autoPlayGames([gameMenuItem]);
+}
+function autoPlayGames(menuItems:GameMenuItem[]){
+    let games = Conversion.gameMenuItemToGame(menuItems);
+    gameController.createPlaylist(games);
+    gameController.startPlaylist();
 }
 input.addEventListener("change", () =>{
     const reader = new FileReader();
@@ -92,76 +164,7 @@ function listInMenu(games: GameMenuItem[]){
         gameElement.onclick = onGameMenuItemClick;
     });
 }
-function onGameMenuItemClick(event:MouseEvent){
-    let element = event.currentTarget as HTMLElement;
-    let index = [...element.parentNode!.children].indexOf(element);
-    let gameMenuItem = gameMenuItems[index];
-    autoPlayGames([gameMenuItem]);
-}
-function autoPlayGames(menuItems:GameMenuItem[]){
-    let games = Conversion.gameMenuItemToGame(menuItems);
-    gameController.showGames(games, 0, 
-        //onGameStartCallback
-        (game:Game, score:number, piecesTaken:Record<string, number>, pieceUrl:Record<string,string>) =>{ 
-            log.innerHTML = "";
-            if (whitePlayerInfo && blackPlayerInfo)
-            {
-                // updatePiecesTakenAndScore(score, piecesTaken, pieceUrl);
-                let whitePlayerText:string = game.white || "White";
-                let blackPlayerText:string = game.black || "Black";
-                let result = game.result;
-                if (result === "1-0")
-                whitePlayerText += " (wins)";
-                else if (result === "0-1")
-                {
-                    blackPlayerText += " (wins)";
-                }
-                else
-                {
-                    whitePlayerText += " (draw)";
-                    blackPlayerText += " (draw)";
-                }
-                blackPlayerInfo.innerHTML = blackPlayerText;
-                whitePlayerInfo.innerHTML = whitePlayerText;
-            }
-            if (game.date || game.event || game.round)
-            {
-                let text = "";
-                if (game.date)
-                    text = game.date + " ";
-                if (game.event)
-                    text += game.event + " "
-                if (game.round)
-                    text += "round " + game.round;
-                gameHeader.innerHTML = text;
-            }
-        },
-        (move:Move) => // onMoveStartCallback
-        {
-            let turnNumber = Math.ceil(move.number / 2);
-            let isNewTurn = move.number % 2 !== 0;
-            let logItem = document.createElement("span");
-            let firstChar = move.notation[0];
-            let logText = isNewTurn ? turnNumber + "." : "";
-            if (firstChar === firstChar.toUpperCase() && firstChar !== "O")
-            {
-                if (move.color === "b"){
-                    firstChar = firstChar.toLowerCase();
-                }
-                firstChar = UTF.pieces[firstChar];
-                logText += firstChar + move.notation.substring(1);
-            }
-            else
-                logText += move.notation;
-            logItem.innerHTML = logText + " ";
-            log.appendChild(logItem);
-        },
-        (game:Game) =>{ // onGameEndCallback
-            console.log("Game ended");
-        }
-    );
-}
-function updatePiecesTakenAndScore(score:number, piecesTaken:Record<string,number>, pieceUrl:Record<string,string>){
+function updateCapturesAndScore(score:number, piecesTaken:Record<string,number>, pieceUrl:Record<string,string>){
     blackPiecesTaken.innerHTML = "";
     whitePiecesTaken.innerHTML = "";
     Object.entries(piecesTaken).forEach(([fenChar, value]) =>{

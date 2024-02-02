@@ -2,14 +2,19 @@ import { Chessboard } from "./Chessboard";
 import DragAndDrop from "./DragAndDrop";
 import { Chess } from "chess.js";
 import { Game, Move } from "./Game";
+import Playlist from "./Playlist";
 
 export class GameController{
-    private chessboard: Chessboard;
-    private dragAndDrop: DragAndDrop | undefined;
-    private animationTimeoutId: NodeJS.Timeout | undefined;
-    private autoplayTimeoutId: NodeJS.Timeout | undefined;
+    private chessboard:Chessboard;
+    private dragAndDrop:DragAndDrop | undefined;
+    private animationTimeoutId:NodeJS.Timeout | undefined;
+    private autoplayTimeoutId:NodeJS.Timeout | undefined;
+    private playlist:Playlist | undefined;
+    onGameStartCallback:Function;
+    onMoveStartCallback:Function;
+    onGameEndCallback:Function;
 
-    constructor(boardElement: HTMLElement, fen:string, dragType:string | undefined){
+    constructor(boardElement: HTMLElement, fen:string, dragType:string | undefined, onGameStartCallback:Function, onMoveStartCallback:Function, onGameEndCallback:Function){
         this.chessboard = new Chessboard(boardElement, fen);
         if (dragType && ["white", "black", "both"].includes(dragType)){
             this.dragAndDrop = new DragAndDrop(this.chessboard, dragType,
@@ -18,75 +23,108 @@ export class GameController{
                     this.move(from, to);
                 });
         }
+        this.onGameStartCallback = onGameStartCallback;
+        this.onMoveStartCallback = onMoveStartCallback;
+        this.onGameEndCallback = onGameEndCallback;
     }
     setFen(fen:string){
         this.chessboard.setFen(fen);
     }
-    cancelCurrentAutoplay(){
+    createPlaylist(games:Game[]){
+        this.stopTimers();
+        this.playlist = new Playlist(games);
+    }
+    stopTimers(){
         clearTimeout(this.animationTimeoutId);
         clearTimeout(this.autoplayTimeoutId);
     }
-    showGames(games:Game[], index: number, onGameStartCallback: Function, onMoveStartCallback:Function, onGameEndCallback: Function){
-        this.cancelCurrentAutoplay();
-        let game = games[index];
-        if (!game.movetext)
-            alert("Could not find the moves in the file");
-        else{
-            let chess = new Chess();
-            this.chessboard.setFen(chess.fen());
-            game.movetext.split(" ").forEach((chunk, index) =>{
-                if (chunk.length > 0){
-                    let notation = chunk.substring(chunk.indexOf(".") +1);
-                    let result = chess.move(notation);
-                    let from = result.from;
-                    let to = result.to;
-                    let promotion = result.promotion as string;
-                    let captured = result.captured as string;
-                    let color = result.color;
-                    let move = new Move(index + 1, color, from, to, notation, promotion, captured)
-                    game.moves.push(move);
-                }
-            });
-            if (game.moves.length === 0)
-                alert("Failed to parse the moves");
-            else{
-                if (this.dragAndDrop)
-                    this.dragAndDrop.preparePieces();
-                let info = this.chessboard.calculateScoreAndPiecesTakenByFen(chess.fen());
-                onGameStartCallback(game, info.score, info.piecesTaken, info.pieceUrl);
-                this.showMoves(chess, game.moves, 0, 
-                    (move:Move) =>{ //onMoveStartCallback
-                        onMoveStartCallback(move);
-                    }, 
-                    () =>{ //onGameEndCallback
-                        onGameEndCallback(games[index]);
-                        if (index < games.length -1)
-                        {
-                            this.showGames(games, ++index, onGameStartCallback, onMoveStartCallback, onGameEndCallback);
-                        }
-                    });
-            }
+    startPlaylist(){
+        if (this.playlist){
+            this.playlist.isPaused = false;
+            this.showGames(this.playlist);
         }
     }
-    showMoves(chess: Chess, moves: Move[], index: number, onMoveStartCallback: Function, onGameEndCallback: Function)
-    {
-        onMoveStartCallback(moves[index]);
-        this.animateMove(chess, moves[index], () =>{
-            // OnAnimationEnd: Don't show next move right away
-            this.autoplayTimeoutId = setTimeout(() => {
-                if (index === moves.length -1)
-                {
-                    onGameEndCallback();
+    pausePlaylist(){
+        this.stopTimers();
+        if (this.playlist){
+            this.playlist.isPaused = true;
+        }
+    }
+    showGames(playlist:Playlist){
+        if (playlist !== this.playlist || playlist.isPaused)
+            return;
+        else{
+            let game = playlist.games[playlist.gameIndex];
+            if (!game.movetext)
+                alert("Could not find the moves in the file");
+            else if (game.moves.length === 0)
+            {
+                playlist.chess = new Chess();
+                this.chessboard.setFen(playlist.chess.fen());
+                game.movetext.split(" ").forEach((chunk, index) =>{
+                    if (chunk.length > 0){
+                        let notation = chunk.substring(chunk.indexOf(".") +1);
+                        let result = playlist.chess.move(notation);
+                        let from = result.from;
+                        let to = result.to;
+                        let promotion = result.promotion as string;
+                        let captured = result.captured as string;
+                        let color = result.color;
+                        let move = new Move(index + 1, color, from, to, notation, promotion, captured)
+                        game.moves.push(move);
+                    }
+                });
+                if (game.moves.length === 0){
+                    alert("Failed to parse the moves");
+                    this.playlist = undefined;
+                    return;
                 }
+                this.playlist.moveIndex = 0;
+                this.onGameStartCallback(game);
+            }
+            if (this.dragAndDrop){
+                this.dragAndDrop.preparePieces();
+            }
+            this.showMoves(playlist);
+        }
+    }
+    showMoves(playlist:Playlist)
+    {
+        if (playlist !== this.playlist || playlist.isPaused)
+            return;
+        else{
+            let game = playlist.games[playlist.gameIndex];
+            let move = game.moves[playlist.moveIndex];
+            this.onMoveStartCallback(move);
+            this.animateMove(playlist, () =>
+            {
+                if (playlist !== this.playlist)
+                    return;
                 else
                 {
-                    this.showMoves(chess, moves, ++index, onMoveStartCallback, onGameEndCallback);
+                    // OnAnimationEnd: Don't show next move right away
+                    this.autoplayTimeoutId = setTimeout(() => {
+                        if (playlist.moveIndex === game.moves.length -1)
+                        {
+                            this.onGameEndCallback(game);
+                            if (playlist.gameIndex < playlist.games.length -1){
+                                playlist.gameIndex++;
+                                this.showGames(playlist);
+                            }
+                        }
+                        else
+                        {
+                            this.showMoves(playlist);
+                        }
+                    }, 1000);
                 }
-            }, 1000);
-        });
+            });
+        }
     }
-    animateMove(game: Chess, move:Move, onAnimationEndCallback: Function){
+    animateMove(playlist:Playlist, onAnimationEndCallback: Function){
         this.chessboard.removeAllHighlights();
+        let game = playlist.games[playlist.gameIndex];
+        let move = game.moves[playlist.moveIndex];
         let sourceSquare = this.chessboard.squares[move.from].element;
         let targetSquare = this.chessboard.squares[move.to].element;
         if (sourceSquare && targetSquare)
@@ -126,6 +164,7 @@ export class GameController{
                     move.piece.classList.remove("dragging");
                 });
                 this.move(move.from, move.to, move.promotion);//this function will take care of castling so we don't need to call it for the rook
+                playlist.moveIndex++;
                 onAnimationEndCallback();
             }, { once: true });
         }

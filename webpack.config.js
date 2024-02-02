@@ -2,10 +2,10 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
-  mode: 'development',
-  devtool: 'inline-source-map',
-  devServer: { static: './dist' },
-  watch: false,
+  mode: 'production',
+  // devtool: 'inline-source-map',
+  // devServer: { static: './dist' },
+  // watch: false,
   entry: {
     index: './src/index.ts'
   },
