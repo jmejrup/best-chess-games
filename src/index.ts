@@ -5,6 +5,7 @@ import { PGNReader } from "./components/pgnViewer/PGNReader";
 import { StoredGame } from "./components/pgnViewer/StoredGame";
 import { GameMenuItem } from "./components/pgnViewer/GameMenuItem";
 import { Conversion } from "./components/pgnViewer/Conversion";
+import UTF from "./components/pgnViewer/UTF";
 import Icons from "./components/pgnViewer/Icons";
 import * as json from "./components/chess/games.json";
 import "./index.css";
@@ -26,20 +27,6 @@ let storedGames = json.games as StoredGame[];
 let gameMenuItems: GameMenuItem[] = Conversion.storedGamesToGameMenuItems(storedGames);
 
 listInMenu(gameMenuItems);
-
-let utfPieces:Record<string, string> = {};
-// utfPieces["p"] = "&#9823";
-utfPieces["R"] = "&#9820";
-utfPieces["N"] = "&#9822";
-utfPieces["B"] = "&#9821";
-utfPieces["Q"] = "&#9819";
-utfPieces["K"] = "&#9818";
-// utfPieces["P"] = "&#9817";
-utfPieces["r"] = "&#9813";
-utfPieces["n"] = "&#9816";
-utfPieces["b"] = "&#9815";
-utfPieces["q"] = "&#9813";
-utfPieces["k"] = "&#9812;"
 
 input.addEventListener("change", () =>{
     const reader = new FileReader();
@@ -145,7 +132,7 @@ function autoPlayGames(menuItems:GameMenuItem[]){
                 if (move.color === "b"){
                     firstChar = firstChar.toLowerCase();
                 }
-                firstChar = utfPieces[firstChar];
+                firstChar = UTF.pieces[firstChar];
                 logText += firstChar + move.notation.substring(1);
             }
             else

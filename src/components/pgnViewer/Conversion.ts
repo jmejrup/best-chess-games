@@ -82,12 +82,4 @@ export class Conversion{
         });
         return storedGames;
     }
-    // static plainObjectsToStoredGames(plainObjects: StoredGame[]){
-    //     let storedGames: StoredGame[] = [];
-    //     plainObjects.forEach(object =>{
-    //         let storedGame = new StoredGame();
-    //         storedGame.date = object.date;
-    //         storedGame.event = object.ev
-    //     });
-    // }
 }
