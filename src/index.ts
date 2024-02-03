@@ -1,4 +1,5 @@
-import { Game, Move } from "./components/chess/Game";
+import { Chess, Move } from "chess.js";
+import { Game, GameState } from "./components/chess/Game";
 import { GameController } from "./components/chess/GameController";
 import { PGNGame } from "./components/pgnViewer/PGN";
 import { PGNReader } from "./components/pgnViewer/PGNReader";
@@ -12,29 +13,34 @@ import "./index.css";
 import "./chess-controls.css";
 
 let chessboard = document.getElementById("chessboard");
-let gameController = new GameController(chessboard!, "start", "none", onGameStartCallback, onMoveStartCallback, onGameEndCallback);
+let gameController = new GameController(chessboard!, "start", "none", onGameStateChanged, onMoveStartCallback, onGameEndCallback);
 
 let gameHeader: HTMLElement = document.getElementById("game-header")!;
 let blackPlayerInfo: HTMLElement = document.getElementById("black-player")!;
 let whitePlayerInfo: HTMLElement = document.getElementById("white-player")!;
 let blackPiecesTaken: HTMLElement = document.getElementById("black-pieces-taken")!;
 let whitePiecesTaken: HTMLElement = document.getElementById("white-pieces-taken")!;
+let autoplay = document.getElementById("autoplay") as HTMLElement;
 let log: HTMLElement = document.getElementById("log")!;
 let input = document.getElementById("file-upload") as HTMLInputElement;
 let pgnGames: PGNGame[] | undefined;
+
+// let html = "P: " + UTF.pieces["p"] + " R: " + UTF.pieces["r"] + " N: " + UTF.pieces["n"] +
+// " B: " + UTF.pieces["b"] + " Q: " + UTF.pieces["q"] + " K: " + UTF.pieces["k"];
+// log.innerHTML = html;
 
 let storedGames = json.games as StoredGame[];
 storedGames = storedGames.filter(game => game.moveText!.indexOf("=") > -1);
 let gameMenuItems: GameMenuItem[] = Conversion.storedGamesToGameMenuItems(storedGames);
 listInMenu(gameMenuItems);
 
-let skipStartIcon = document.getElementById("skip-start") as HTMLImageElement;
-skipStartIcon.src = Icons.skipStart;
-skipStartIcon.onclick = onSkipStartClick;
+let goToStartIcon = document.getElementById("go-to-start") as HTMLImageElement;
+goToStartIcon.src = Icons.goToStart;
+goToStartIcon.onclick = onGoToStartClick;
 
-let skipPreviousIcon = document.getElementById("skip-previous") as HTMLImageElement;
-skipPreviousIcon.src = Icons.skipPrevious;
-skipPreviousIcon.onclick = onSkipPreviousClick;
+let rewindIcon = document.getElementById("rewind") as HTMLImageElement;
+rewindIcon.src = Icons.rewind;
+rewindIcon.onclick = onRewindClick;
 
 let pauseIcon = document.getElementById("pause") as HTMLImageElement;
 pauseIcon.src = Icons.pause;
@@ -44,51 +50,109 @@ let playIcon = document.getElementById("play") as HTMLImageElement;
 playIcon.src = Icons.play;
 playIcon.onclick = onPlayClick;
 
-let skipNextIcon = document.getElementById("skip-next") as HTMLImageElement;
-skipNextIcon.src = Icons.skipNext;
-skipNextIcon.onclick = onSkipNextClick;
+let forwardIcon = document.getElementById("forward") as HTMLImageElement;
+forwardIcon.src = Icons.forward;
+forwardIcon.onclick = onForwardClick;
 
-let skipEndIcon = document.getElementById("skip-end") as HTMLImageElement;
-skipEndIcon.src = Icons.skipEnd;
-skipEndIcon.onclick = onSkipEndClick;
+let goToEndIcon = document.getElementById("go-to-end") as HTMLImageElement;
+goToEndIcon.src = Icons.goToEnd;
+goToEndIcon.onclick = onGoToEndClick;
 
-
-function onSkipStartClick(){
-
+function onGameStateChanged(state:GameState){
+    if (state === GameState.Pause){
+        playIcon.style.display = "inline";
+        pauseIcon.style.display = "none";
+    }
+    else{
+        playIcon.style.display = "none";
+        pauseIcon.style.display = "inline";
+    }
 }
-function onSkipPreviousClick(){
-    gameController.skipPrevious();
+function onGoToStartClick(){
+    gameController.goToStart();
+    log.innerHTML = "";
 }
-function onSkipNextClick(){
-
+function onRewindClick(){
+    gameController.rewind();
 }
-function onSkipEndClick(){
-
+function onForwardClick(){
+    gameController.forward();
+}
+function onGoToEndClick(){
+    gameController.goToEnd();
+    log.innerHTML = "";
+    if (gameController.currentGame && gameController.currentGame.chess){
+        let game = gameController.currentGame!;
+        let chess = game.chess!;
+        let history = chess.history({verbose:true});
+        let moveNumber = 1;
+        history.forEach(move =>{
+            addLogItem(moveNumber++, move);
+        });
+    }
 }
 function onPlayClick(){
-    playIcon.style.display = "none";
-    pauseIcon.style.display = "inline";
-    gameController.startPlaylist();
+    gameController.play();
 }
 function onPauseClick(){
-    playIcon.style.display = "inline";
-    pauseIcon.style.display = "none";
-    gameController.pausePlaylist();
+    gameController.pause();
 }
 
-function onGameStartCallback(game:Game, score:number, captures:Record<string, number>, pieceUrl:Record<string,string>){
+function onMoveStartCallback(game:Game){
     //Callback implemented via constructor on GameController further above
+    if (game.state === GameState.Rewind){
+        if (log.lastChild){
+            log.removeChild(log.lastChild!);
+        }
+    }
+    else{
+        let move = game.chess?.history({verbose:true})[game.moveIndex]!;
+        let moveNumber = game.moveIndex +1;
+        addLogItem(moveNumber, move);
+    }
+}
+function addLogItem(moveNumber:number, move:Move){
+    let turnNumber = Math.ceil(moveNumber / 2);
+    let isNewTurn = moveNumber % 2 !== 0;
+    let logItem = document.createElement("span");
+    let firstChar = move.san.substring(0, 1);
+    let logText = isNewTurn ? turnNumber + "." : "";
+    if (firstChar === firstChar.toUpperCase() && firstChar.toUpperCase() !== "O")
+    {
+        if (move.color === "b"){
+            firstChar = firstChar.toLowerCase();
+        }
+        firstChar = UTF.pieces[firstChar];
+        logText += firstChar + move.san.substring(1);
+    }
+    else
+        logText += move.san;
+    logItem.innerHTML = logText + " ";
+    log.appendChild(logItem);
+}
+function onGameEndCallback(game:Game){
+    //Callback implemented via constructor on GameController further above
+    console.log("Game ended");
+}
+function onGameMenuItemClick(event:MouseEvent){
+    autoplay.style.display = "block";
+    let element = event.currentTarget as HTMLElement;
+    let index = [...element.parentNode!.children].indexOf(element);
+    let gameMenuItem = gameMenuItems[index];
+    let game = new Game(gameMenuItem.moveText);
+    gameController.startGame(game);
     log.innerHTML = "";
+    let storedGame = storedGames[index];
     if (whitePlayerInfo && blackPlayerInfo)
     {
-        // updatePiecesTakenAndScore(score, piecesTaken, pieceUrl);
-        let whitePlayerText:string = game.white || "White";
-        let blackPlayerText:string = game.black || "Black";
-        let result = game.result;
-        if (result === "1-0")
-        whitePlayerText += " (wins)";
-        else if (result === "0-1")
-        {
+        //updatePiecesTakenAndScore(score, piecesTaken, pieceUrl);
+        let whitePlayerText:string = storedGame.white || "White";
+        let blackPlayerText:string = storedGame.black || "Black";
+        let result = storedGame.result;
+        if (result === "1-0"){
+            whitePlayerText += " (wins)";
+        }
+        else if (result === "0-1"){
             blackPlayerText += " (wins)";
         }
         else
@@ -99,52 +163,17 @@ function onGameStartCallback(game:Game, score:number, captures:Record<string, nu
         blackPlayerInfo.innerHTML = blackPlayerText;
         whitePlayerInfo.innerHTML = whitePlayerText;
     }
-    if (game.date || game.event || game.round)
+    if (storedGame.date || storedGame.event || storedGame.round)
     {
         let text = "";
-        if (game.date)
-            text = game.date + " ";
-        if (game.event)
-            text += game.event + " "
-        if (game.round)
-            text += "round " + game.round;
+        if (storedGame.date)
+            text = storedGame.date + " ";
+        if (storedGame.event)
+            text += storedGame.event + " "
+        if (storedGame.round)
+            text += "round " + storedGame.round;
         gameHeader.innerHTML = text;
     }
-}
-function onMoveStartCallback(move:Move){
-    //Callback implemented via constructor on GameController further above
-    let turnNumber = Math.ceil(move.number / 2);
-    let isNewTurn = move.number % 2 !== 0;
-    let logItem = document.createElement("span");
-    let firstChar = move.notation[0];
-    let logText = isNewTurn ? turnNumber + "." : "";
-    if (firstChar === firstChar.toUpperCase() && firstChar !== "O")
-    {
-        if (move.color === "b"){
-            firstChar = firstChar.toLowerCase();
-        }
-        firstChar = UTF.pieces[firstChar];
-        logText += firstChar + move.notation.substring(1);
-    }
-    else
-        logText += move.notation;
-    logItem.innerHTML = logText + " ";
-    log.appendChild(logItem);
-}
-function onGameEndCallback(game:Game){
-    //Callback implemented via constructor on GameController further above
-    console.log("Game ended");
-}
-function onGameMenuItemClick(event:MouseEvent){
-    let element = event.currentTarget as HTMLElement;
-    let index = [...element.parentNode!.children].indexOf(element);
-    let gameMenuItem = gameMenuItems[index];
-    autoPlayGames([gameMenuItem]);
-}
-function autoPlayGames(menuItems:GameMenuItem[]){
-    let games = Conversion.gameMenuItemToGame(menuItems);
-    gameController.createPlaylist(games);
-    gameController.startPlaylist();
 }
 input.addEventListener("change", () =>{
     const reader = new FileReader();
@@ -171,7 +200,8 @@ input.addEventListener("change", () =>{
 function listInMenu(games: GameMenuItem[]){
     let gamesElement = document.getElementById("games")!;
     gamesElement.innerHTML = "";
-    games.forEach(game =>{
+    games.forEach(game =>
+    {
         let gameElement = document.createElement("div");
         gameElement.className = "game";
         gamesElement.appendChild(gameElement);
@@ -194,7 +224,8 @@ function listInMenu(games: GameMenuItem[]){
         gameElement.onclick = onGameMenuItemClick;
     });
 }
-function updateCapturesAndScore(score:number, piecesTaken:Record<string,number>, pieceUrl:Record<string,string>){
+function updateCapturesAndScore(score:number, piecesTaken:Record<string,number>, pieceUrl:Record<string,string>)
+{
     blackPiecesTaken.innerHTML = "";
     whitePiecesTaken.innerHTML = "";
     Object.entries(piecesTaken).forEach(([fenChar, value]) =>{

@@ -32,19 +32,6 @@ export class Conversion{
         });
         return gameMenuItems;
     }
-    static gameMenuItemToGame(list: GameMenuItem[]){
-        let games: Game[] = [];
-        list.forEach(item => {
-            let game = new Game(item.moveText, item.result);
-            game.date = item.date;
-            game.event = item.event;
-            game.round = item.round;
-            game.white = item.white;
-            game.black = item.black;
-            games.push(game);
-        });
-        return games;
-    }
     static pgnToStoredGame(pgnGames:PGNGame[]): StoredGame[] | null
     {
         let storedGames: StoredGame[] = [];

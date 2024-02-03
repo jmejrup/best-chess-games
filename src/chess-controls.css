@@ -19,18 +19,19 @@
 .cgame > .pieces-taken > .piece[data-type="p"], .cgame > .pieces-taken > .piece[data-type="P"]  {
     margin-left:-11px;
 }
-.chess > .controls > .autoplay {
+.chess > .controls > #autoplay {
     margin-bottom: 10px;
+    display:none;
 }
-.chess > .controls > .autoplay > img{
+.chess > .controls > #autoplay > img{
     background-color:white;
     padding:2px 4px;
     border-radius:4px;
     cursor:pointer;
 }
-.chess > .controls > .autoplay > img:hover{
+.chess > .controls > #autoplay > img:hover{
     outline:2px solid #FC0;
 }
-.chess > .controls > .autoplay > img#play{
+.chess > .controls > #autoplay > img#play{
     display: none;
 }

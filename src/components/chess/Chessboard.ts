@@ -60,10 +60,7 @@ export class Chessboard{
                 }
                 else{
                     let key = this.squareKeys[squareIndex++];
-                    let pieceElement = document.createElement("img");
-                    pieceElement.className = "piece";
-                    pieceElement.setAttribute("data-type", fenChar);
-                    pieceElement.src = this.pieceUrl[fenChar];
+                    let pieceElement = this.createPiece(fenChar);
                     this.squares[key].element.appendChild(pieceElement);
                     if (fenChar === fenChar.toUpperCase()){
                         this.whitePieces.push(pieceElement);
@@ -74,6 +71,13 @@ export class Chessboard{
                 }
             }
         }
+    }
+    createPiece(fenChar:string){
+        let pieceElement = document.createElement("img");
+        pieceElement.className = "piece";
+        pieceElement.setAttribute("data-type", fenChar);
+        pieceElement.src = this.pieceUrl[fenChar];
+        return pieceElement;
     }
     rotate = () => {
         let array = Array.from(this.boardElement.children).reverse();

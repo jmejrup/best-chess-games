@@ -1,33 +1,23 @@
+import { Chess } from "chess.js";
+
 export class Game{
-    date: string | undefined;
-    event: string | undefined;
-    round: string | undefined;
-    white: string | undefined;
-    black: string | undefined;
-    movetext: string;
-    result: string;
-    startFen: string | undefined;
-    moves: Move[] = [];
-    constructor(moveText: string, result:string){
-        this.movetext = moveText;
-        this.result = result;
+    moveText: string;
+    chess: Chess | undefined;
+    moveIndex = 0;
+    state: GameState;
+
+    constructor(moveText: string){
+        this.moveText = moveText;
+        this.state = GameState.Play;
+    }
+    init(){
+        this.chess = new Chess();
+        this.chess.loadPgn(this.moveText);
     }
 }
-export class Move{
-    number:number;
-    color:string;
-    from: string;
-    to: string;
-    notation: string;
-    promotion: string;
-    captured: string;
-    constructor(number:number, color:string, from:string, to:string, notation:string, promotion:string, captured:string){
-        this.number = number;
-        this.color = color;
-        this.from = from;
-        this.to = to;
-        this.notation = notation;
-        this.promotion = promotion;
-        this.captured = captured;
-    }
+export enum GameState{
+    Play,
+    Pause,
+    Forward,
+    Rewind
 }
