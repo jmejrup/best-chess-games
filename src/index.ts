@@ -1,4 +1,4 @@
-import { Chess, Move } from "chess.js";
+import { Move } from "chess.js";
 import { Game, GameState } from "./components/chess/Game";
 import { GameController } from "./components/chess/GameController";
 import { PGNGame } from "./components/pgnViewer/PGN";
@@ -13,105 +13,128 @@ import "./index.css";
 import "./chess-controls.css";
 
 let chessboard = document.getElementById("chessboard");
-let gameController = new GameController(chessboard!, "start", "none", onGameStateChanged, onMoveStartCallback, onGameEndCallback);
+let gameController = new GameController(chessboard!, "start", "none");
 
-let gameHeader: HTMLElement = document.getElementById("game-header")!;
-let blackPlayerInfo: HTMLElement = document.getElementById("black-player")!;
-let whitePlayerInfo: HTMLElement = document.getElementById("white-player")!;
-let blackPiecesTaken: HTMLElement = document.getElementById("black-pieces-taken")!;
-let whitePiecesTaken: HTMLElement = document.getElementById("white-pieces-taken")!;
+let gameHeader = document.getElementById("game-header") as HTMLElement;
+let blackPlayerInfo = document.getElementById("black-player") as HTMLElement;
+let whitePlayerInfo = document.getElementById("white-player") as HTMLElement;
+let blackPiecesTaken = document.getElementById("black-pieces-taken") as HTMLElement;
+let whitePiecesTaken = document.getElementById("white-pieces-taken") as HTMLElement;
 let autoplay = document.getElementById("autoplay") as HTMLElement;
-let log: HTMLElement = document.getElementById("log")!;
 let input = document.getElementById("file-upload") as HTMLInputElement;
 let pgnGames: PGNGame[] | undefined;
-
-// let html = "P: " + UTF.pieces["p"] + " R: " + UTF.pieces["r"] + " N: " + UTF.pieces["n"] +
-// " B: " + UTF.pieces["b"] + " Q: " + UTF.pieces["q"] + " K: " + UTF.pieces["k"];
-// log.innerHTML = html;
 
 let storedGames = json.games as StoredGame[];
 storedGames = storedGames.filter(game => game.moveText!.indexOf("=") > -1);
 let gameMenuItems: GameMenuItem[] = Conversion.storedGamesToGameMenuItems(storedGames);
 listInMenu(gameMenuItems);
 
-let goToStartIcon = document.getElementById("go-to-start") as HTMLImageElement;
-goToStartIcon.src = Icons.goToStart;
-goToStartIcon.onclick = onGoToStartClick;
-
-let rewindIcon = document.getElementById("rewind") as HTMLImageElement;
-rewindIcon.src = Icons.rewind;
-rewindIcon.onclick = onRewindClick;
-
-let pauseIcon = document.getElementById("pause") as HTMLImageElement;
-pauseIcon.src = Icons.pause;
-pauseIcon.onclick = onPauseClick;
-
-let playIcon = document.getElementById("play") as HTMLImageElement;
-playIcon.src = Icons.play;
-playIcon.onclick = onPlayClick;
-
-let forwardIcon = document.getElementById("forward") as HTMLImageElement;
-forwardIcon.src = Icons.forward;
-forwardIcon.onclick = onForwardClick;
-
-let goToEndIcon = document.getElementById("go-to-end") as HTMLImageElement;
-goToEndIcon.src = Icons.goToEnd;
-goToEndIcon.onclick = onGoToEndClick;
-
-function onGameStateChanged(state:GameState){
-    if (state === GameState.Pause){
-        playIcon.style.display = "inline";
-        pauseIcon.style.display = "none";
-    }
-    else{
-        playIcon.style.display = "none";
-        pauseIcon.style.display = "inline";
-    }
-}
-function onGoToStartClick(){
-    gameController.goToStart();
-    log.innerHTML = "";
-}
-function onRewindClick(){
-    gameController.rewind();
-}
-function onForwardClick(){
-    gameController.forward();
-}
-function onGoToEndClick(){
-    gameController.goToEnd();
-    log.innerHTML = "";
-    if (gameController.currentGame && gameController.currentGame.chess){
-        let game = gameController.currentGame!;
-        let chess = game.chess!;
-        let history = chess.history({verbose:true});
-        let moveNumber = 1;
-        history.forEach(move =>{
-            addLogItem(moveNumber++, move);
-        });
-    }
-}
-function onPlayClick(){
-    gameController.play();
-}
-function onPauseClick(){
-    gameController.pause();
-}
-
-function onMoveStartCallback(game:Game){
-    //Callback implemented via constructor on GameController further above
-    if (game.state === GameState.Rewind){
-        if (log.lastChild){
-            log.removeChild(log.lastChild!);
+let log = document.getElementById("log") as HTMLElement;
+log.onclick=(event) =>{
+    let target = event.target as HTMLElement;
+    if (target !== log){
+        let logItemIndex = Array.from(log.children).indexOf(target);
+        log.innerHTML = "";
+        if (gameController.currentGame){
+            let moves = gameController.currentGame.moves;
+            for (let moveIndex = 0; moveIndex <= logItemIndex; moveIndex++){
+                let move = moves[moveIndex];
+                addLogItem(moveIndex, move);
+            }
+            gameController.goToMove(logItemIndex);
         }
     }
+}
+let iconGoToStart = prepareIcon("go-to-start", Icons.goToStart, ()=>{
+    log.innerHTML = "";
+    gameController.goToStart();
+});
+let iconRewind = prepareIcon("rewind", Icons.rewind, gameController.rewind);
+let iconPlay = prepareIcon("play", Icons.play, gameController.play);
+let iconPause = prepareIcon("pause", Icons.pause, gameController.pause);
+let iconForward = prepareIcon("forward", Icons.forward, gameController.forward);
+let iconGoToEnd = prepareIcon("go-to-end", Icons.goToEnd, () =>{
+    log.innerHTML = "";
+    let moveNumber = 0;
+    if (gameController.currentGame){
+        gameController.currentGame.moves.forEach(move =>{
+            addLogItem(moveNumber++, move);
+        });
+        gameController.goToEnd();
+    }
+});
+
+function prepareIcon(id:string, iconUrl:string, fn: () => void){
+    let icon = document.getElementById(id) as HTMLImageElement;
+    icon.src = iconUrl;
+    icon.onclick = fn;
+    return icon;
+}
+input.addEventListener("change", () =>{
+    const reader = new FileReader();
+    reader.addEventListener("load", () => {
+            let text = reader.result;
+            if (text && typeof text === "string")
+            {
+                pgnGames = PGNReader.readPGNFile(text);
+                if (pgnGames){
+                    pgnGames.reverse();
+                    // pgnGames = pgnGames.filter(pgn => pgn.moveText!.indexOf("=") > -1);
+                    gameMenuItems = Conversion.pgnToGameMenuItem(pgnGames);
+                    gameMenuItems.sort((a,b) => b.date.localeCompare(a.date));
+                    listInMenu(gameMenuItems);
+                }
+            }
+        },
+        false
+    );
+    if (input.files && input.files[0]) {
+        reader.readAsText(input.files[0]);
+    }
+});
+function listInMenu(games: GameMenuItem[]){
+    let gameMenu = document.getElementById("games") as HTMLElement;
+    gameMenu.innerHTML = "";
+    games.forEach(game =>
+    {
+        let menuItem = document.createElement("div");
+        gameMenu.appendChild(menuItem);
+        menuItem.className = "game";
+        menuItem.onclick = onGameMenuItemClick;
+        [{class: "header", text: game.header()}, 
+         {class: "white", text: game.white},
+         {class: "black", text: game.black},
+         {class: "result", text: game.result}
+        ].forEach(item =>{
+            let element = document.createElement("div");
+            element.className = item.class;
+            element.innerHTML = item.text;
+            menuItem.appendChild(element);
+        });
+    });
+}
+gameController.callbacks.onGameStateChanged = (state: GameState) =>{
+    if (state === GameState.Pause){
+        iconPlay.style.display = "inline";
+        iconPause.style.display = "none";
+    }
     else{
-        let move = game.chess?.history({verbose:true})[game.moveIndex]!;
-        let moveNumber = game.moveIndex +1;
-        addLogItem(moveNumber, move);
+        iconPlay.style.display = "none";
+        iconPause.style.display = "inline";
     }
 }
-function addLogItem(moveNumber:number, move:Move){
+gameController.callbacks.onMoveStart = (game:Game, move:Move, rewind:boolean) =>{
+    if (!rewind){
+        addLogItem(game.moveIndex, game.moves[game.moveIndex]);
+    }
+}
+gameController.callbacks.onMoveEnd = (game:Game, move:Move, rewind:boolean) =>{
+    if (rewind){
+        log.removeChild(log.lastChild as Node);
+    }
+}
+function addLogItem(moveIndex:number, move:Move){
+    let moveNumber = moveIndex +1;
     let turnNumber = Math.ceil(moveNumber / 2);
     let isNewTurn = moveNumber % 2 !== 0;
     let logItem = document.createElement("span");
@@ -130,18 +153,15 @@ function addLogItem(moveNumber:number, move:Move){
     logItem.innerHTML = logText + " ";
     log.appendChild(logItem);
 }
-function onGameEndCallback(game:Game){
-    //Callback implemented via constructor on GameController further above
-    console.log("Game ended");
-}
 function onGameMenuItemClick(event:MouseEvent){
     autoplay.style.display = "block";
     let element = event.currentTarget as HTMLElement;
     let index = [...element.parentNode!.children].indexOf(element);
     let gameMenuItem = gameMenuItems[index];
     let game = new Game(gameMenuItem.moveText);
-    gameController.startGame(game);
+    let moveNumber = 1;
     log.innerHTML = "";
+    gameController.startGame(game);
     let storedGame = storedGames[index];
     if (whitePlayerInfo && blackPlayerInfo)
     {
@@ -174,55 +194,6 @@ function onGameMenuItemClick(event:MouseEvent){
             text += "round " + storedGame.round;
         gameHeader.innerHTML = text;
     }
-}
-input.addEventListener("change", () =>{
-    const reader = new FileReader();
-    reader.addEventListener("load", () => {
-            let text = reader.result;
-            if (text && typeof text === "string")
-            {
-                pgnGames = PGNReader.readPGNFile(text);
-                if (pgnGames){
-                    pgnGames.reverse();
-                    // pgnGames = pgnGames.filter(pgn => pgn.moveText!.indexOf("=") > -1);
-                    gameMenuItems = Conversion.pgnToGameMenuItem(pgnGames);
-                    gameMenuItems.sort((a,b) => b.date.localeCompare(a.date));
-                    listInMenu(gameMenuItems);
-                }
-            }
-        },
-        false
-    );
-    if (input.files && input.files[0]) {
-        reader.readAsText(input.files[0]);
-    }
-});
-function listInMenu(games: GameMenuItem[]){
-    let gamesElement = document.getElementById("games")!;
-    gamesElement.innerHTML = "";
-    games.forEach(game =>
-    {
-        let gameElement = document.createElement("div");
-        gameElement.className = "game";
-        gamesElement.appendChild(gameElement);
-        let headerElement = document.createElement("div");
-        headerElement.className = "header";
-        headerElement.innerHTML = game.header();
-        gameElement.appendChild(headerElement);
-        let whiteElement = document.createElement("div");
-        whiteElement.className = "white";
-        whiteElement.innerHTML = game.white;
-        gameElement.appendChild(whiteElement);
-        let blackElement = document.createElement("div");
-        blackElement.className = "black";
-        blackElement.innerHTML = game.black;
-        gameElement.appendChild(blackElement);
-        let resultElement = document.createElement("div");
-        resultElement.className = "result";
-        resultElement.innerHTML = game.result;
-        gameElement.appendChild(resultElement);
-        gameElement.onclick = onGameMenuItemClick;
-    });
 }
 function updateCapturesAndScore(score:number, piecesTaken:Record<string,number>, pieceUrl:Record<string,string>)
 {

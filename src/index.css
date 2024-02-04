@@ -29,6 +29,7 @@ body{padding:0;margin:0;background-color:rgb(57,57,57);color:rgb(245, 245, 245);
 .chess > .board > .padding > #white-player{height:30px;line-height:30px;}
 .chess > .controls{width:50%;float:left;margin-top:90px;height:200px;}
 .chess > .controls > #log{padding:0;line-height:22px;}
+.chess > .controls > #log > span{cursor:pointer;}
 @media only screen and (max-width: 750px) {
     .chess > .board {float:none;width:100%;}
     .chess > .controls{float:none;width:100%;margin-top:0;}

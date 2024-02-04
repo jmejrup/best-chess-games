@@ -1,18 +1,16 @@
-import { Chess } from "chess.js";
+import { Chess, Move } from "chess.js";
 
 export class Game{
-    moveText: string;
-    chess: Chess | undefined;
-    moveIndex = 0;
-    state: GameState;
+    state: GameState = GameState.Pause;
+    moveIndex = -1;
+    moves: Move[] = [];
 
-    constructor(moveText: string){
-        this.moveText = moveText;
-        this.state = GameState.Play;
-    }
-    init(){
-        this.chess = new Chess();
-        this.chess.loadPgn(this.moveText);
+    constructor(moveText:string | undefined){
+        if (moveText){
+            let chess = new Chess();
+            chess.loadPgn(moveText);
+            this.moves = chess.history({verbose:true});
+        }
     }
 }
 export enum GameState{
