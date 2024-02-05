@@ -32,6 +32,7 @@
 .chess > .controls > #autoplay > img:hover{
     outline:2px solid #FC0;
 }
-.chess > .controls > #autoplay > img#play{
-    display: none;
+.chess > .controls > #autoplay > img.disabled{
+    background-color:grey;
+    outline:none;
 }

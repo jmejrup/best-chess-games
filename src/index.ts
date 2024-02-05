@@ -54,13 +54,13 @@ let iconPlay = prepareIcon("play", Icons.play, gameController.play);
 let iconPause = prepareIcon("pause", Icons.pause, gameController.pause);
 let iconForward = prepareIcon("forward", Icons.forward, gameController.forward);
 let iconGoToEnd = prepareIcon("go-to-end", Icons.goToEnd, () =>{
-    log.innerHTML = "";
-    let moveNumber = 0;
     if (gameController.currentGame){
+        log.innerHTML = "";
+        let moveNumber = 0;
+        gameController.goToEnd();
         gameController.currentGame.moves.forEach(move =>{
             addLogItem(moveNumber++, move);
         });
-        gameController.goToEnd();
     }
 });
 
@@ -113,25 +113,56 @@ function listInMenu(games: GameMenuItem[]){
         });
     });
 }
-gameController.callbacks.onGameStateChanged = (state: GameState) =>{
-    if (state === GameState.Pause){
-        iconPlay.style.display = "inline";
-        iconPause.style.display = "none";
-    }
-    else{
-        iconPlay.style.display = "none";
-        iconPause.style.display = "inline";
+gameController.callbacks.onGameStateChanged = (newState:GameState) =>{
+    switch (newState){
+        case GameState.Start:
+            enable([iconPlay, iconForward, iconGoToEnd]);
+            disable([iconGoToStart, iconRewind, iconPause]);
+            break;
+        case GameState.Play:
+            enable([iconGoToStart, iconRewind, iconPause, iconForward, iconGoToEnd]);
+            disable([iconPlay]);
+            break;
+        case GameState.Pause:
+            enable([iconGoToStart, iconRewind, iconPlay, iconForward, iconGoToEnd]);
+            disable([iconPause]);
+            break;
+        case GameState.Rewind:
+            enable([iconGoToStart, iconPlay, iconPause, iconForward, iconGoToEnd]);
+            disable([iconRewind]);
+            break;
+        case GameState.Forward:
+            enable([iconGoToStart, iconRewind, iconPlay, iconPause, iconGoToEnd]);
+            disable([iconForward]);
+            break;
+        case GameState.End:
+            enable([iconGoToStart, iconRewind]);
+            disable([iconPlay, iconPause, iconForward, iconGoToEnd]);
+            break;
     }
 }
-gameController.callbacks.onMoveStart = (game:Game, move:Move, rewind:boolean) =>{
+function disable(icons: HTMLImageElement[]){
+    icons.forEach(icon=>{
+        icon.classList.add("disabled");
+    });
+}
+function enable(icons: HTMLImageElement[]){
+    icons.forEach(icon=>{
+        icon.classList.remove("disabled");
+    });
+}
+gameController.callbacks.onMoveStart = (move:Move, index:number, rewind:boolean) =>{
     if (!rewind){
-        addLogItem(game.moveIndex, game.moves[game.moveIndex]);
+        addLogItem(index, move);
     }
 }
-gameController.callbacks.onMoveEnd = (game:Game, move:Move, rewind:boolean) =>{
+gameController.callbacks.onMoveEnd = (move:Move, index:number, rewind:boolean) =>{
     if (rewind){
         log.removeChild(log.lastChild as Node);
     }
+}
+gameController.callbacks.onCapture = (color:string, fenChar:string, capturedPiece:HTMLImageElement, rect:DOMRect) =>{
+    console.log("");
 }
 function addLogItem(moveIndex:number, move:Move){
     let moveNumber = moveIndex +1;

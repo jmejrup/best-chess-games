@@ -14,8 +14,10 @@ export class Game{
     }
 }
 export enum GameState{
+    Start,
     Play,
     Pause,
     Forward,
-    Rewind
+    Rewind,
+    End
 }
