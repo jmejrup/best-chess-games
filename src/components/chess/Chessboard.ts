@@ -1,6 +1,12 @@
 import "./chessboard.css";
 import pieceUrl from "./themes/pieces/burnett";
 
+export enum CapturesPosition{
+    Left,
+    Right,
+    Side,
+    None
+}
 export class Square{
     element: HTMLElement;
     key:string;
@@ -10,19 +16,37 @@ export class Square{
     }
 }
 export class Chessboard{
-    boardElement: HTMLElement;
+    boardContainer: HTMLElement;
+    boardElement:HTMLElement;
     squares: Record<string, Square> = {};
     private squareKeys = ["a8", "b8", "c8", "d8", "e8", "f8", "g8", "h8", "a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7", "a6", "b6", "c6", "d6", "e6", "f6", "g6", "h6", "a5", "b5", "c5", "d5", "e5", "f5", "g5", "h5", "a4", "b4", "c4", "d4", "e4", "f4", "g4", "h4", "a3", "b3", "c3", "d3", "e3", "f3", "g3", "h3", "a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2", "a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1"];
+    // pieceCounts: Record<string, number> = {["p"]:8,["P"]:8,["r"]:2,["R"]:2,["n"]:2,["N"]:2,["b"]:2,["B"]:2,["q"]:1,["Q"]:1,["k"]:1,["K"]:1};
     whitePieces: HTMLImageElement[] = [];
     blackPieces: HTMLImageElement[] = [];
+    whiteCaptures:HTMLElement;
+    blackCaptures:HTMLElement;
 
-    constructor(boardElement: HTMLElement, fen:string){
-        this.boardElement = boardElement;
+    constructor(boardContainer: HTMLElement, fen:string, capturesPosition:CapturesPosition | undefined){
+        this.boardContainer = boardContainer;
+        this.boardElement = document.createElement("div");
         this.boardElement.classList.add("cboard");
-
+        this.boardContainer.appendChild(this.boardElement);
+        this.whiteCaptures = document.createElement("div");
+        this.blackCaptures = document.createElement("div");
+        [this.whiteCaptures, this.blackCaptures].forEach((element, index) =>{
+            element.className = "captures";
+            element.classList.add(index === 0 ? "white" : "black");
+            ["p", "n", "b", "r", "q"].forEach(pieceType =>{
+                let span = document.createElement("span");
+                span.className = pieceType;
+                element.appendChild(span);
+            });
+        });
+        boardContainer.prepend(this.whiteCaptures);
+        boardContainer.appendChild(this.blackCaptures);
         this.createEmptySquares();
         if (fen){
-            this.setFen(fen);
+            this.setFen(fen, false);
         }
     }
     getPieceUrl(fenChar:string){
@@ -41,11 +65,18 @@ export class Chessboard{
         floatClearer.className = "clearer";
         return newSquares;
     }
-    setFen(fen:string){
-        Object.values(this.squares).forEach(square =>{
-            square.element.innerHTML = "";
-            square.element.className = "square";
-        });
+    setFen(fen:string, clearFirst:boolean){
+        if (clearFirst){
+            Object.values(this.squares).forEach(square =>{
+                square.element.innerHTML = "";
+                square.element.className = "square";
+            });
+            [this.whiteCaptures, this.blackCaptures].forEach(container =>{
+                Array.from(container!.children).forEach(child => {
+                    child.innerHTML = "";
+                })
+            });
+        }
         if (fen !== ""){
             if (fen.toLowerCase() === "start")
                 fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -69,7 +100,26 @@ export class Chessboard{
                     }
                 }
             }
+            let standing = this.calculateScoreAndCapturesByFen(fen);
+            Object.entries(standing.captures).forEach(([key, value]) =>{
+                if (value > 0){
+                    let color = key === key.toUpperCase() ? "b" : "w";
+                    for (let i = 0; i < value; i++){
+                        let piece = this.createPiece(key);
+                        this.addCapture(color, key.toLowerCase(), piece);
+                    }
+                }
+            });
         }
+    }
+    addCapture(color:string, captured:string, piece:HTMLImageElement){
+        let container = color === "b" ? this.whiteCaptures : this.blackCaptures;
+        let span = container.getElementsByClassName(captured)[0] as HTMLElement;
+        span.appendChild(piece);
+    }
+    undoCapture(color:string, captured:string){
+        let container = color === "b" ? this.whiteCaptures : this.blackCaptures;
+        return container.getElementsByClassName(captured)[0].firstChild!;
     }
     createPiece(fenChar:string){
         let pieceElement = document.createElement("img");

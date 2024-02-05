@@ -1,4 +1,4 @@
-import { Chessboard } from "./Chessboard";
+import { CapturesPosition, Chessboard } from "./Chessboard";
 import DragAndDrop from "./DragAndDrop";
 import { Move } from "chess.js";
 import { MoveInfo } from "./MoveInfo";
@@ -19,7 +19,7 @@ export class GameController{
     private cancelAnimation = false;
 
     constructor(boardElement: HTMLElement, fen:string, dragType:string | undefined){
-        this.chessboard = new Chessboard(boardElement, fen);
+        this.chessboard = new Chessboard(boardElement, fen, CapturesPosition.Left);
         if (dragType && ["white", "black", "both"].includes(dragType)){
             this.dragAndDrop = new DragAndDrop(this.chessboard, dragType,
                 // Callback on drop
@@ -37,7 +37,7 @@ export class GameController{
         this.clearTimeouts();
         this.currentGame = game;
         game.moveIndex = -1;
-        this.chessboard.setFen("start");
+        this.chessboard.setFen("start", true);
         this.updateGameState(GameState.Play);
     }
     private updateGameState(newState: GameState){
@@ -47,7 +47,7 @@ export class GameController{
                     return;
                 }
             }
-            else if (this.currentGame.state === GameState.End){
+            else if (this.currentGame.state === GameState.End && this.currentGame.moveIndex === this.currentGame.moves.length -1){
                 if ([GameState.Play, GameState.Pause, GameState.Forward].includes(newState)){
                     return;
                 }
@@ -73,7 +73,7 @@ export class GameController{
                 }
                 game.moveIndex = moveIndex;
                 if (moveIndex === -1){
-                    this.chessboard.setFen("start");
+                    this.chessboard.setFen("start", true);
                     this.updateGameState(GameState.Start);
                 }
                 else{
@@ -84,7 +84,7 @@ export class GameController{
                         this.updateGameState(GameState.Pause);
                     }
                     let move = game.moves[moveIndex];
-                    this.chessboard.setFen(move.after);
+                    this.chessboard.setFen(move.after, true);
                     this.chessboard.squares[move.from].element.classList.add("source");
                     this.chessboard.squares[move.to].element.classList.add("target");
                 }
@@ -132,16 +132,14 @@ export class GameController{
             moveInfo.castling.rookTargetSquare.classList.add("target");
         }
         else if (rewind){
+            // Undo promotion and capture before animation starts
             if (move.promotion){
-                // Undo promotion before animation start
                 let fenChar = move.color === "b" ? "p" : "P";
                 moveInfo.piece.setAttribute("data-type", fenChar);
                 moveInfo.piece.src = this.chessboard.getPieceUrl(fenChar);
             }
             if (move.captured){
-                // Undo capture before animation start
-                let fenChar = move.color === "w" ? move.captured : move.captured.toUpperCase();
-                let piece = this.chessboard.createPiece(fenChar);
+                let piece = this.chessboard.undoCapture(move.color, move.captured);
                 moveInfo.targetSquare.appendChild(piece);
             }
         }
@@ -150,10 +148,11 @@ export class GameController{
             // OnAnimationEndCallback 
             if (!rewind && move.captured && this.callbacks.onCapture){
                 let captureSquare = moveInfo.partialMoves[0].destination;
-                let capturedPiece = captureSquare.firstChild as HTMLImageElement;
-                let rect = capturedPiece.getBoundingClientRect();
-                captureSquare.removeChild(capturedPiece);
-                this.callbacks.onCapture(move.color, move.captured, capturedPiece, rect);
+                let piece = captureSquare.firstChild as HTMLImageElement;
+                this.chessboard.addCapture(move.color, move.captured, piece);
+                // let rect = capturedPiece.getBoundingClientRect();
+                // captureSquare.removeChild(capturedPiece);
+                // this.callbacks.onCapture(move.color, move.captured, capturedPiece, rect);
             }
             // There may be 2 moves due to castling
             moveInfo.partialMoves.forEach(move =>{

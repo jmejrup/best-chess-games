@@ -13,7 +13,7 @@ import "./index.css";
 import "./chess-controls.css";
 
 let chessboard = document.getElementById("chessboard");
-let gameController = new GameController(chessboard!, "start", "none");
+let gameController = new GameController(chessboard!, "", "none");
 
 let gameHeader = document.getElementById("game-header") as HTMLElement;
 let blackPlayerInfo = document.getElementById("black-player") as HTMLElement;
