@@ -3,7 +3,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     position: relative;
-    background-image: url("./img/boards/green.png");
+    background-image: url("./themes/boards/green.png");
 }
 .cboard > .square {
     width: 12.5%;
@@ -16,8 +16,16 @@
     display: block;
     padding-bottom: 100%; /* Ensure that height of square always equals width of square */
 }
-.captures div{
-    background-color:rgb(200,200,200);
+.player{
+    column-count:2;
+}
+.player .captures{
+    height:4vh;
+}
+.player .name{
+    text-align: right;
+    padding-right:6px;
+    line-height:4vh;
 }
 .captures .piece{
     position:static;

@@ -6,7 +6,6 @@ export class MoveInfo{
     targetSquare:HTMLElement;
     piece:HTMLImageElement;
     castling:Castling | undefined;
-    // capturedPiece:HTMLImageElement | undefined;
     partialMoves:{piece:HTMLImageElement, destination:HTMLElement}[] = [];
 
     constructor(chessboard:Chessboard, move:Move, rewind:boolean){

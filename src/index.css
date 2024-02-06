@@ -23,10 +23,6 @@ body{padding:0;margin:0;background-color:rgb(57,57,57);color:rgb(245, 245, 245);
 .chess > .board {float:left;width:49%;margin-top:30px;}
 .chess > .board > .padding{padding:10px 5%;}
 .chess > .board > .padding > #game-header{font-weight: bold;margin-bottom:3px;}
-.chess > .board > .padding > #black-player{height:20px;line-height:20px;margin-bottom: 0;}
-.chess > .board > .padding > #white-pieces-captured{height:25px;}
-.chess > .board > .padding > #black-pieces-captured{height:25px;}
-.chess > .board > .padding > #white-player{height:20px;line-height:20px;margin-bottom: 0;}
 .chess > .controls{width:50%;float:left;margin-top:90px;height:200px;}
 .chess > .controls > #autoplay {
     margin-bottom: 10px;

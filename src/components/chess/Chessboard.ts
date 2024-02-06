@@ -23,16 +23,25 @@ export class Chessboard{
     // pieceCounts: Record<string, number> = {["p"]:8,["P"]:8,["r"]:2,["R"]:2,["n"]:2,["N"]:2,["b"]:2,["B"]:2,["q"]:1,["Q"]:1,["k"]:1,["K"]:1};
     whitePieces: HTMLImageElement[] = [];
     blackPieces: HTMLImageElement[] = [];
-    whiteCaptures:HTMLElement;
-    blackCaptures:HTMLElement;
+    whiteCaptures:HTMLElement = document.createElement("div");
+    blackCaptures:HTMLElement = document.createElement("div");
+    whitePlayerName:HTMLElement = document.createElement("div");
+    blackPlayerName:HTMLElement = document.createElement("div");
 
     constructor(boardContainer: HTMLElement, fen:string, capturesPosition:CapturesPosition | undefined){
         this.boardContainer = boardContainer;
         this.boardElement = document.createElement("div");
         this.boardElement.classList.add("cboard");
         this.boardContainer.appendChild(this.boardElement);
-        this.whiteCaptures = document.createElement("div");
-        this.blackCaptures = document.createElement("div");
+
+        let blackPlayer = document.createElement("div");
+        blackPlayer.className = "player black";
+        boardContainer.prepend(blackPlayer);
+
+        let whitePlayer = document.createElement("div");
+        whitePlayer.className = "player white";
+        boardContainer.appendChild(whitePlayer);
+        
         [this.whiteCaptures, this.blackCaptures].forEach((element, index) =>{
             element.className = "captures";
             element.classList.add(index === 0 ? "white" : "black");
@@ -42,8 +51,18 @@ export class Chessboard{
                 element.appendChild(span);
             });
         });
-        boardContainer.prepend(this.whiteCaptures);
-        boardContainer.appendChild(this.blackCaptures);
+        blackPlayer.appendChild(this.whiteCaptures);
+        whitePlayer.appendChild(this.blackCaptures);
+
+        this.blackPlayerName.className = "name";
+        this.blackPlayerName.innerHTML = "Black";
+        blackPlayer.appendChild(this.blackPlayerName);
+
+        this.whitePlayerName = document.createElement("div");
+        this.whitePlayerName.className = "name";
+        this.whitePlayerName.innerHTML = "White";
+        whitePlayer.appendChild(this.whitePlayerName);
+
         this.createEmptySquares();
         if (fen){
             this.setFen(fen, false);
@@ -111,6 +130,10 @@ export class Chessboard{
                 }
             });
         }
+    }
+    setPlayerNames(black:string, white:string){
+        this.blackPlayerName.innerHTML = black;
+        this.whitePlayerName.innerHTML = white;
     }
     addCapture(color:string, captured:string, piece:HTMLImageElement){
         let container = color === "b" ? this.whiteCaptures : this.blackCaptures;

@@ -7,7 +7,6 @@ import { Callbacks } from "./Callbacks";
 
 export class GameController{
     private chessboard:Chessboard;
-    private dragAndDrop:DragAndDrop | undefined;
     private animationTimeoutId:NodeJS.Timeout | undefined;
     private autoplayTimeoutId:NodeJS.Timeout | undefined;
     currentGame: Game | undefined;
@@ -21,7 +20,7 @@ export class GameController{
     constructor(boardElement: HTMLElement, fen:string, dragType:string | undefined){
         this.chessboard = new Chessboard(boardElement, fen, CapturesPosition.Left);
         if (dragType && ["white", "black", "both"].includes(dragType)){
-            this.dragAndDrop = new DragAndDrop(this.chessboard, dragType,
+            new DragAndDrop(this.chessboard, dragType,
                 // Callback on drop
                 (from:string, to:string) => {
                     this.onDrop(from, to);
@@ -33,11 +32,12 @@ export class GameController{
         clearTimeout(this.animationTimeoutId);
         clearTimeout(this.autoplayTimeoutId);
     }
-    startGame(game:Game){
+    startGame(game:Game, whiteName:string|undefined, blackName:string|undefined){
         this.clearTimeouts();
         this.currentGame = game;
         game.moveIndex = -1;
         this.chessboard.setFen("start", true);
+        this.chessboard.setPlayerNames(blackName || "Black", whiteName || "White");
         this.updateGameState(GameState.Play);
     }
     private updateGameState(newState: GameState){
