@@ -19,9 +19,6 @@
 .player{
     column-count:2;
 }
-.player .captures{
-    height:4vh;
-}
 .player .name{
     clear:both;
     padding-top:1px;

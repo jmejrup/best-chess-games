@@ -37,8 +37,8 @@ export class Chessboard{
         
         let blackStats = this.addChild(blackPlayer, "div", "stats", "");
         let whiteStats = this.addChild(whitePlayer, "div", "stats", "");
-        let blackCapture = this.addChild(whiteStats, "div", "white captures", "");
-        let whiteCapture = this.addChild(blackStats, "div", "black captures", "");
+        let blackCapture = this.addChild(blackStats, "div", "captures", "");
+        let whiteCapture = this.addChild(whiteStats, "div", "captures", "");
         [whiteCapture, blackCapture].forEach((element, index) =>{
             ["p", "n", "b", "r", "q"].forEach(type =>{
                 if (index === 0)
@@ -90,6 +90,7 @@ export class Chessboard{
             Object.values(this.whiteCaptures).concat(Object.values(this.blackCaptures)).forEach(element =>{
                 element.innerHTML = "";
             });
+            this.setScore(0);
         }
         if (fen !== ""){
             if (fen.toLowerCase() === "start")
@@ -115,7 +116,6 @@ export class Chessboard{
                 }
             }
             let standing = this.calculateScoreAndCapturesByFen(fen);
-            this.setScore(standing.score);
             Object.entries(standing.captures).forEach(([key, value]) =>{
                 if (value > 0){
                     let color = key === key.toUpperCase() ? "b" : "w";
@@ -139,7 +139,7 @@ export class Chessboard{
         this.whitePlayerName.innerHTML = white;
     }
     addCapture(color:string, captured:string, piece:HTMLImageElement){
-        let span = color === "b" ? this.whiteCaptures[captured] : this.blackCaptures[captured];
+        let span = color === "b" ? this.blackCaptures[captured] : this.whiteCaptures[captured];
         span.appendChild(piece);
         let pieceValue = this.pieceValues[captured];
         let newScore = this.score + (color === "b" ? -1 * pieceValue : pieceValue);
@@ -147,9 +147,9 @@ export class Chessboard{
     }
     undoCapture(color:string, captured:string){
         let pieceValue = this.pieceValues[captured];
-        let newScore = this.score + (color === "b" ? -1 * pieceValue : pieceValue);
+        let newScore = this.score + (color === "b" ? pieceValue : pieceValue * -1);
         this.setScore(newScore);
-        return (color === "b" ? this.whiteCaptures[captured].firstChild : this.blackCaptures[captured].firstChild) as HTMLImageElement;
+        return (color === "b" ? this.blackCaptures[captured].firstChild : this.whiteCaptures[captured].firstChild) as HTMLImageElement;
     }
     createPiece(fenChar:string){
         let pieceElement = document.createElement("img");
