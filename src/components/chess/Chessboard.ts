@@ -1,12 +1,6 @@
 import "./chessboard.css";
 import pieceUrl from "./themes/pieces/burnett";
 
-export enum CapturesPosition{
-    Left,
-    Right,
-    Side,
-    None
-}
 export class Square{
     element: HTMLElement;
     key:string;
@@ -16,57 +10,60 @@ export class Square{
     }
 }
 export class Chessboard{
-    boardContainer: HTMLElement;
+    private boardContainer: HTMLElement;
+    private squareKeys = ["a8", "b8", "c8", "d8", "e8", "f8", "g8", "h8", "a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7", "a6", "b6", "c6", "d6", "e6", "f6", "g6", "h6", "a5", "b5", "c5", "d5", "e5", "f5", "g5", "h5", "a4", "b4", "c4", "d4", "e4", "f4", "g4", "h4", "a3", "b3", "c3", "d3", "e3", "f3", "g3", "h3", "a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2", "a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1"];
+    //DragAndDrop and Gamecontroller uses
     boardElement:HTMLElement;
     squares: Record<string, Square> = {};
-    private squareKeys = ["a8", "b8", "c8", "d8", "e8", "f8", "g8", "h8", "a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7", "a6", "b6", "c6", "d6", "e6", "f6", "g6", "h6", "a5", "b5", "c5", "d5", "e5", "f5", "g5", "h5", "a4", "b4", "c4", "d4", "e4", "f4", "g4", "h4", "a3", "b3", "c3", "d3", "e3", "f3", "g3", "h3", "a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2", "a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1"];
-    // pieceCounts: Record<string, number> = {["p"]:8,["P"]:8,["r"]:2,["R"]:2,["n"]:2,["N"]:2,["b"]:2,["B"]:2,["q"]:1,["Q"]:1,["k"]:1,["K"]:1};
+    //Only DragAndDrop uses
     whitePieces: HTMLImageElement[] = [];
     blackPieces: HTMLImageElement[] = [];
-    whiteCaptures:HTMLElement = document.createElement("div");
-    blackCaptures:HTMLElement = document.createElement("div");
-    whitePlayerName:HTMLElement = document.createElement("div");
-    blackPlayerName:HTMLElement = document.createElement("div");
+    //End
+    private pieceValues:Record<string, number> = {["p"]:1,["n"]:3,["b"]:3,["r"]:5,["q"]:9};
+    private score = 0;
+    private whiteScore:HTMLElement;
+    private blackScore:HTMLElement;
+    private whiteCaptures: Record<string, HTMLElement> = {};
+    private blackCaptures: Record<string, HTMLElement> = {};
+    private whitePlayerName:HTMLElement;
+    private blackPlayerName:HTMLElement;
 
-    constructor(boardContainer: HTMLElement, fen:string, capturesPosition:CapturesPosition | undefined){
+    constructor(boardContainer: HTMLElement, fen:string){
         this.boardContainer = boardContainer;
-        this.boardElement = document.createElement("div");
-        this.boardElement.classList.add("cboard");
-        this.boardContainer.appendChild(this.boardElement);
-
-        let blackPlayer = document.createElement("div");
-        blackPlayer.className = "player black";
-        boardContainer.prepend(blackPlayer);
-
-        let whitePlayer = document.createElement("div");
-        whitePlayer.className = "player white";
-        boardContainer.appendChild(whitePlayer);
         
-        [this.whiteCaptures, this.blackCaptures].forEach((element, index) =>{
-            element.className = "captures";
-            element.classList.add(index === 0 ? "white" : "black");
-            ["p", "n", "b", "r", "q"].forEach(pieceType =>{
-                let span = document.createElement("span");
-                span.className = pieceType;
-                element.appendChild(span);
+        let blackPlayer = this.addChild(boardContainer, "div", "player black", "");
+        this.boardElement = this.addChild(boardContainer, "div", "cboard", "");
+        let whitePlayer = this.addChild(boardContainer, "div", "player white", "");
+        
+        let blackStats = this.addChild(blackPlayer, "div", "stats", "");
+        let whiteStats = this.addChild(whitePlayer, "div", "stats", "");
+        let blackCapture = this.addChild(whiteStats, "div", "white captures", "");
+        let whiteCapture = this.addChild(blackStats, "div", "black captures", "");
+        [whiteCapture, blackCapture].forEach((element, index) =>{
+            ["p", "n", "b", "r", "q"].forEach(type =>{
+                if (index === 0)
+                    this.whiteCaptures[type] = this.addChild(whiteCapture, "span", type, "");
+                else
+                    this.blackCaptures[type] = this.addChild(blackCapture, "span", type, "");
             });
         });
-        blackPlayer.appendChild(this.whiteCaptures);
-        whitePlayer.appendChild(this.blackCaptures);
-
-        this.blackPlayerName.className = "name";
-        this.blackPlayerName.innerHTML = "Black";
-        blackPlayer.appendChild(this.blackPlayerName);
-
-        this.whitePlayerName = document.createElement("div");
-        this.whitePlayerName.className = "name";
-        this.whitePlayerName.innerHTML = "White";
-        whitePlayer.appendChild(this.whitePlayerName);
+        this.whiteScore = this.addChild(whiteStats, "span", "score", "");
+        this.blackScore = this.addChild(blackStats, "span", "score", "");
+        this.whitePlayerName = this.addChild(whitePlayer, "div", "name", "White");
+        this.blackPlayerName = this.addChild(blackPlayer, "div", "name", "Black");
 
         this.createEmptySquares();
         if (fen){
             this.setFen(fen, false);
         }
+    }
+    private addChild(parent:HTMLElement, tag:string, className:string, text:string){
+        let child = document.createElement(tag);
+        child.className = className;
+        if (text)
+            child.innerHTML = text;
+        parent.appendChild(child);
+        return child;
     }
     getPieceUrl(fenChar:string){
         return pieceUrl[fenChar];
@@ -90,10 +87,8 @@ export class Chessboard{
                 square.element.innerHTML = "";
                 square.element.className = "square";
             });
-            [this.whiteCaptures, this.blackCaptures].forEach(container =>{
-                Array.from(container!.children).forEach(child => {
-                    child.innerHTML = "";
-                })
+            Object.values(this.whiteCaptures).concat(Object.values(this.blackCaptures)).forEach(element =>{
+                element.innerHTML = "";
             });
         }
         if (fen !== ""){
@@ -120,6 +115,7 @@ export class Chessboard{
                 }
             }
             let standing = this.calculateScoreAndCapturesByFen(fen);
+            this.setScore(standing.score);
             Object.entries(standing.captures).forEach(([key, value]) =>{
                 if (value > 0){
                     let color = key === key.toUpperCase() ? "b" : "w";
@@ -131,18 +127,29 @@ export class Chessboard{
             });
         }
     }
+    setScore(score:number){
+        this.score = score;
+        let whitePrefix = score === 0 ? "" : (score > 0 ? "+" : "-");
+        let blackPrefix = score === 0 ? "" : (score > 0 ? "-" : "+");
+        this.whiteScore.innerHTML = score === 0 ? "" : (whitePrefix + Math.abs(score));
+        this.blackScore.innerHTML = score === 0 ? "" : (blackPrefix + Math.abs(score));
+    }
     setPlayerNames(black:string, white:string){
         this.blackPlayerName.innerHTML = black;
         this.whitePlayerName.innerHTML = white;
     }
     addCapture(color:string, captured:string, piece:HTMLImageElement){
-        let container = color === "b" ? this.whiteCaptures : this.blackCaptures;
-        let span = container.getElementsByClassName(captured)[0] as HTMLElement;
+        let span = color === "b" ? this.whiteCaptures[captured] : this.blackCaptures[captured];
         span.appendChild(piece);
+        let pieceValue = this.pieceValues[captured];
+        let newScore = this.score + (color === "b" ? -1 * pieceValue : pieceValue);
+        this.setScore(newScore);
     }
     undoCapture(color:string, captured:string){
-        let container = color === "b" ? this.whiteCaptures : this.blackCaptures;
-        return container.getElementsByClassName(captured)[0].firstChild!;
+        let pieceValue = this.pieceValues[captured];
+        let newScore = this.score + (color === "b" ? -1 * pieceValue : pieceValue);
+        this.setScore(newScore);
+        return (color === "b" ? this.whiteCaptures[captured].firstChild : this.blackCaptures[captured].firstChild) as HTMLImageElement;
     }
     createPiece(fenChar:string){
         let pieceElement = document.createElement("img");

@@ -10,9 +10,6 @@ import "./index.css";
 let chessboard = document.getElementById("chessboard");
 let gameController = new GameController(chessboard!, "start", "none");
 let log = document.getElementById("log") as HTMLElement;
-let gameHeader = document.getElementById("game-header") as HTMLElement;
-let blackPlayerInfo = document.getElementById("black-player") as HTMLElement;
-let whitePlayerInfo = document.getElementById("white-player") as HTMLElement;
 let autoplay = document.getElementById("autoplay") as HTMLElement;
 let input = document.getElementById("file-upload") as HTMLInputElement;
 
@@ -49,6 +46,10 @@ function onGameMenuItemClick(event:MouseEvent){
     }
     autoplay.style.display = "block";
     let element = event.currentTarget as HTMLElement;
+    Array.from(element.parentElement!.children).forEach(item =>{
+        item.classList.remove("active");
+    });
+    element.classList.add("active");
     let index = [...element.parentNode!.children].indexOf(element);
     let pgnGame = pgnGames[index];
     let game = new Game(pgnGame.moveText);

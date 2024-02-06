@@ -1,4 +1,4 @@
-import { CapturesPosition, Chessboard } from "./Chessboard";
+import { Chessboard } from "./Chessboard";
 import DragAndDrop from "./DragAndDrop";
 import { Move } from "chess.js";
 import { MoveInfo } from "./MoveInfo";
@@ -18,7 +18,7 @@ export class GameController{
     private cancelAnimation = false;
 
     constructor(boardElement: HTMLElement, fen:string, dragType:string | undefined){
-        this.chessboard = new Chessboard(boardElement, fen, CapturesPosition.Left);
+        this.chessboard = new Chessboard(boardElement, fen);
         if (dragType && ["white", "black", "both"].includes(dragType)){
             new DragAndDrop(this.chessboard, dragType,
                 // Callback on drop
