@@ -1,4 +1,5 @@
 import {Chessboard} from "./Chessboard";
+import { Shared } from "./Shared";
 
 export default class DragAndDrop
 {
@@ -14,15 +15,14 @@ export default class DragAndDrop
     private scrollLeft = 0;
     private deltaScrollLeft = 0;
 
-    constructor(chessboard:Chessboard, dragType:string, callbackOnDrop:Function){
+    constructor(chessboard:Chessboard, dragType:string, callbackOnDrop:Function)
+    {
         this.chessboard = chessboard;
-        this.boardElement = chessboard.boardElement;
+        this.boardElement = chessboard.element;
         this.dragType = dragType;
         this.callbackOnDrop = callbackOnDrop;
 
-        document.addEventListener("mousedown", (event) => {
-            this.handleMouseDown(event);
-        });
+        document.addEventListener("mousedown", (event) => this.handleMouseDown(event) );
         document.addEventListener("mousemove", (event) => this.handleMouseMove(event) );
         document.addEventListener("mouseup", (event) => this.handleMouseUp(event) );
         document.addEventListener("scroll", () => this.handleScroll() );
@@ -30,45 +30,32 @@ export default class DragAndDrop
         this.preparePieces();
     }
     preparePieces(){
-        let dragablePieces: HTMLImageElement[] = [];
-        if (this.dragType === "white")
-            dragablePieces = this.chessboard.whitePieces;
-        else if (this.dragType === "black")
-            dragablePieces = this.chessboard.blackPieces;
-        else
-            dragablePieces = this.chessboard.whitePieces.concat(this.chessboard.blackPieces);
-        dragablePieces.forEach(piece =>{
-            piece.classList.add("allow-drag");
+        Object.entries(this.chessboard.pieceElements).forEach(([key, pieceElement]) =>{
+            if (this.dragType === "both" || (this.dragType === "white" && key === key.toUpperCase()) || (this.dragType === "black" && key === key.toLowerCase())){
+                pieceElement.classList.add("allow-drag");
+            }
         });
     }
     private handleMouseDown(event:MouseEvent)
     {
-        if (this.isClickOnThisChessboard(event))
+        if (Shared.isClickOnChessboard(event, this.boardElement))
         {
             if (!event.target)
                 return false;
             else{
-                let target = event.target as HTMLElement;
-                let squareElement: HTMLElement | null = null;
-                let pieceeElement: HTMLElement | null = null;
-                if (target.classList.contains("square"))
-                    squareElement = target as HTMLElement;
-                else if (target.classList.contains("piece")){
-                    pieceeElement = target as HTMLElement;
-                    if (target.parentNode)
-                        squareElement = target.parentNode as HTMLElement;
-                }
                 let isRightClick = event.button && event.button == 2;
-                if (isRightClick) {
-                    if (squareElement){
-                        if (squareElement.classList.contains("right-clicked"))
-                            squareElement.classList.remove("right-clicked");
-                        else
-                            squareElement.classList.add("right-clicked");
-                    }
-                }
-                else {
+                if (!isRightClick) {
                     this.chessboard.removeAllHighlights();
+                    let target = event.target as HTMLElement;
+                    let squareElement: HTMLElement | null = null;
+                    let pieceeElement: HTMLElement | null = null;
+                    if (target.classList.contains("square"))
+                        squareElement = target as HTMLElement;
+                    else if (target.classList.contains("piece")){
+                        pieceeElement = target as HTMLElement;
+                        if (target.parentNode)
+                            squareElement = target.parentNode as HTMLElement;
+                    }
                     if (squareElement && pieceeElement && pieceeElement.classList.contains("allow-drag"))
                     {
                         squareElement.classList.add("source");
@@ -98,7 +85,8 @@ export default class DragAndDrop
     }
     private handleMouseUp(event:MouseEvent)
     {
-        if (this.isClickOnThisChessboard(event))
+        debugger;
+        if (Shared.isClickOnChessboard(event, this.chessboard.element))
         {
             if (this.dragPiece) {
                 event.preventDefault();
@@ -139,28 +127,8 @@ export default class DragAndDrop
     }
     private handleContextMenu(event:MouseEvent)
     {        
-        if (this.isClickOnThisChessboard(event))
+        if (Shared.isClickOnChessboard(event, this.chessboard.element))
             event.preventDefault();
-    }
-    private isClickOnThisChessboard = (event: MouseEvent) =>
-    {
-        let rect = this.getOffsetRectangle(this.boardElement);
-        let point = this.getAbsoluteMousePosition(event);
-        return point.x > rect.x && point.x < rect.x + rect.width && point.y > rect.y && point.y < rect.y + rect.height;
-    }
-    private getOffsetRectangle(element:HTMLElement){
-        let rect = { x: element.offsetLeft, y: element.offsetTop, width: element.offsetWidth, height: element.offsetHeight };
-        while (element.offsetParent instanceof HTMLElement){
-            element = element.offsetParent;
-            rect.x += element.offsetLeft;
-            rect.y += element.offsetTop;
-        }
-        return rect;
-    }
-    private getAbsoluteMousePosition(event:MouseEvent){
-        let x = event.clientX + document.documentElement.scrollLeft;
-        let y = event.clientY + document.documentElement.scrollTop;
-        return { x: x, y: y };
     }
     cancelAnimatedMoves(){
         if (this.dragPiece){

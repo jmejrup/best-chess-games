@@ -10,7 +10,7 @@
     "jsxFactory": "DOMcreateElement",
     "allowJs": true,
     "strict": true,
-    "moduleResolution": "node16",
+    "moduleResolution": "Node16",
     "resolveJsonModule": true
   }
 }

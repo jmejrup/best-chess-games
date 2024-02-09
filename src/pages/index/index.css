@@ -1,0 +1,49 @@
+.menu{height:100vh;position:absolute;width:320px;}
+.menu > .top{
+    position:absolute;
+    height:80px;
+    left:0;
+    right:0;
+}
+.menu input[type="file"] { display: none;}
+.menu .custom-file-upload {
+    margin-top:20px;
+    border-radius:8px;
+    border: 1px solid #ccc;
+    display: inline-block;
+    padding: 8px;
+    cursor: pointer;
+    margin-left:10px;
+}
+.menu > #games{position:absolute;top:65px;bottom:0;left:0;right:0;border-radius:2px;background-color:rgb(54,54,54);overflow:hidden;overflow-y:scroll;scrollbar-color:rgb(67,67,67) rgb(57,57,57);}
+.menu > #games > .game{margin:2px 4px 2px 10px;padding:5px 8px;border-radius:8px;cursor:pointer;}
+.menu > #games > .game.active{outline:1px solid rgb(98, 98, 98);background-color:rgb(62,62,62)}
+.menu > #games > .game:hover{background-color:rgb(62, 62, 62)}
+.chess{margin-left:320px;}
+.chess > .board {float:left;width:49%;margin-top:55px;}
+.chess > .board > .padding{padding:10px 5%;}
+.chess > .board > .padding > #game-header{font-weight: bold;margin-bottom:3px;}
+.chess > .controls{width:50%;float:left;margin-top:91px;height:200px;}
+.chess > .controls > #autoplay {
+    margin-bottom: 10px;
+    display:none;
+}
+.chess > .controls > #autoplay > img{
+    background-color:white;
+    padding:4px 8px;
+    border-radius:4px;
+    cursor:pointer;
+}
+.chess > .controls > #autoplay > img:hover{
+    outline:2px solid #FC0;
+}
+.chess > .controls > #autoplay > img.disabled{
+    background-color:grey;
+    outline:none;
+}
+.chess > .controls > #log{padding:0;line-height:22px;}
+.chess > .controls > #log > span{cursor:pointer;}
+@media only screen and (max-width: 750px) {
+    .chess > .board {float:none;width:100%;}
+    .chess > .controls{float:none;width:100%;margin-top:0;}
+}

@@ -17,8 +17,8 @@ export class GameController{
     shortDelayBetweenMoves:number = 0;
     private cancelAnimation = false;
 
-    constructor(boardElement: HTMLElement, fen:string, dragType:string | undefined){
-        this.chessboard = new Chessboard(boardElement, fen);
+    constructor(boardElement: HTMLElement, fen:string, dragType:string | undefined, useArrows:boolean){
+        this.chessboard = new Chessboard(boardElement, fen, useArrows);
         if (dragType && ["white", "black", "both"].includes(dragType)){
             new DragAndDrop(this.chessboard, dragType,
                 // Callback on drop

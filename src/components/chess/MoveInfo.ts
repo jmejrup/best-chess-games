@@ -12,9 +12,6 @@ export class MoveInfo{
         this.sourceSquare = chessboard.squares[move.from].element;
         this.targetSquare = chessboard.squares[move.to].element;
         this.piece = (rewind ? this.targetSquare.firstChild : this.sourceSquare.firstChild) as HTMLImageElement;
-        if (!this.piece){
-            debugger;
-        }
         let move1 = {piece:this.piece, destination: rewind ? this.sourceSquare : this.targetSquare};
         this.partialMoves.push(move1);
 
@@ -23,12 +20,6 @@ export class MoveInfo{
             let move2 = {piece:this.castling.rook, destination: rewind ? this.castling.rookSourceSquare : this.castling.rookTargetSquare};
             this.partialMoves.push(move2);
         }
-        // else{
-        //     if (rewind && move.captured){
-        //         let fenChar = move.color === "w" ? move.captured : move.captured.toUpperCase();
-        //         this.capturedPiece = chessboard.createPiece(fenChar);
-        //     }
-        // }
     }
 }
 export class Castling{

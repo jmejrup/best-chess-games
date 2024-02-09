@@ -2,12 +2,13 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
-  mode: 'production',
-  // devtool: 'inline-source-map',
-  // devServer: { static: './dist' },
-  // watch: false,
+  mode: 'development',
+  devtool: 'inline-source-map',
+  devServer: { static: './dist' },
   entry: {
-    index: './src/index.ts'
+    index: './src/pages/index/Index.ts',
+    stockfish: './src/pages/stockfish/Stockfish.ts',
+    openings: './src/pages/openings/Openings.ts'
   },
   output: {
     filename:'[name].[contenthash].js',
@@ -18,11 +19,14 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin(
-      { title:"Test", template:"./src/index.html", inject:"body"},
+      { chunks:['index'], title:"PGN Viewer", filename: "index.html", template:"./src/pages/index/index.html", inject:"head"},
     ),
-    // new HtmlWebpackPlugin(
-    //   { filename:'another.html', title:'Hello', inject:"head", template:"./src/users.html" }
-    // ),
+    new HtmlWebpackPlugin(
+      { chunks:['stockfish'], title:'Stockfish', filename: 'stockfish.html', template:"./src/pages/stockfish/stockfish.html",  inject:"head" }
+    ),
+    new HtmlWebpackPlugin(
+      { chunks:['openings'], title:'Chess Openings', filename: 'openings.html', template:"./src/pages/openings/openings.html",  inject:"head" }
+    ),
   ],
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
