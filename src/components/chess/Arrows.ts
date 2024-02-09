@@ -11,7 +11,7 @@ export default class Arrows{
 
     constructor(chessboard:Chessboard){
         this.chessboard = chessboard;
-        this.svg.classList.add('svg-test');
+        this.svg.classList.add('board-svg');
         this.chessboard.element.prepend(this.svg);
         this.svg.setAttribute('viewBox', '0 0 100 100');
         this.svg.setAttribute('stroke', this.strokeColor);

@@ -39,14 +39,13 @@ export class Chessboard{
     private blackPlayerName:HTMLElement;
 
     constructor(boardContainer: HTMLElement, fen:string, useArrows:boolean){
-        let blackPlayer = this.addChild(boardContainer, "div", "player black");
-        this.element = this.addChild(boardContainer, "div", "cboard");
-        let whitePlayer = this.addChild(boardContainer, "div", "player white");
+        let cords = this.addChild(boardContainer, "div", "cords");
+        let blackPlayer = this.addChild(cords, "div", "player black");
+        this.element = this.addChild(cords, "div", "board");
+        let whitePlayer = this.addChild(cords, "div", "player white");
         
-        let blackStats = this.addChild(blackPlayer, "div", "stats");
-        let whiteStats = this.addChild(whitePlayer, "div", "stats");
-        let blackCapture = this.addChild(blackStats, "div", "captures");
-        let whiteCapture = this.addChild(whiteStats, "div", "captures");
+        let blackCapture = this.addChild(blackPlayer, "div", "captures");
+        let whiteCapture = this.addChild(whitePlayer, "div", "captures");
         let record = [this.whiteCaptures, this.blackCaptures];
         [whiteCapture, blackCapture].forEach((element, index) =>{
             ["p", "n", "b", "r", "q"].forEach(type =>{
@@ -54,8 +53,8 @@ export class Chessboard{
                 record[index][type] = child;
             });
         });
-        this.whiteScore = this.addChild(whiteStats, "span", "score");
-        this.blackScore = this.addChild(blackStats, "span", "score");
+        this.whiteScore = this.addChild(whitePlayer, "span", "score");
+        this.blackScore = this.addChild(blackPlayer, "span", "score");
         this.whitePlayerName = this.addChild(whitePlayer, "div", "name", "White");
         this.blackPlayerName = this.addChild(blackPlayer, "div", "name", "Black");
         if (useArrows){
