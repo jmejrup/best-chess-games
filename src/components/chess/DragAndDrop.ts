@@ -85,7 +85,6 @@ export default class DragAndDrop
     }
     private handleMouseUp(event:MouseEvent)
     {
-        debugger;
         if (Shared.isClickOnChessboard(event, this.chessboard.element))
         {
             if (this.dragPiece) {

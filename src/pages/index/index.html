@@ -5,26 +5,22 @@
         <link rel="shortcut icon" href="">
     </head>
 <body>
-    <div class="menu">
+    <div id="menu">
         <div class="top">
             <input id="file-upload" type='file'>
             <label for="file-upload" class="custom-file-upload">
                 Upload Game PGN
             </label>
         </div>
-
-        <div id="games">
-
-        </div>
+        <div class="items"></div>
     </div>
-    <div class="chess">
-        <div class="board">
+    <div class="main">
+        <div class="left">
             <div class="padding">
-                <!-- <div id="game-header">Game header</div> -->
-                <div id="chessboard"></div>
+                <div id="chess"></div>
             </div>
         </div>
-        <div class="controls">
+        <div class="right">
             <div id="autoplay">
                 <img id="go-to-start" />
                 <img id="rewind" />

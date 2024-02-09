@@ -7,9 +7,8 @@ import Icons from "../../components/pgnViewer/Icons";
 import * as json from "../../components/chess/assets/data/games.json";
 import "../master.css";
 import "./index.css";
-import Arrows from "../../components/chess/Arrows";
 
-let chessboard = document.getElementById("chessboard") as HTMLElement;
+let chessboard = document.getElementById("chess") as HTMLElement;
 let gameController = new GameController(chessboard, "start", "both", true);
 let log = document.getElementById("log") as HTMLElement;
 let autoplay = document.getElementById("autoplay") as HTMLElement;
@@ -42,7 +41,7 @@ function prepareIcon(id:string, iconUrl:string, fn: () => void){
     icon.onclick = fn;
     return icon;
 }
-function onGameMenuItemClick(event:MouseEvent){
+function onMenuItemClick(event:MouseEvent){
     if (pgnGames === undefined){
         return;
     }
@@ -82,14 +81,14 @@ input.addEventListener("change", () =>{
     }
 });
 function listInMenu(games: PGN.Game[]){
-    let gameMenu = document.getElementById("games") as HTMLElement;
-    gameMenu.innerHTML = "";
+    let menu = document.getElementById("menu") as HTMLElement;
+    let items = menu.getElementsByClassName("items")[0];
+    items.innerHTML = "";
     games.forEach(game =>
     {
         let menuItem = document.createElement("div");
-        gameMenu.appendChild(menuItem);
-        menuItem.className = "game";
-        menuItem.onclick = onGameMenuItemClick;
+        items.appendChild(menuItem);
+        menuItem.onclick = onMenuItemClick;
         Object.entries(game.tags).forEach(([key, value]) => 
         {
             let element = document.createElement("div");
