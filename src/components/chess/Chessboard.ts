@@ -27,6 +27,7 @@ export class Callbacks{
 export class Chessboard{
     element:HTMLElement;
     squares:Record<string, Square> = {};
+    squareContainer:HTMLElement;
     pieceElements:HTMLImageElement[] = [];
     isRotated = false;
     callbacks = new Callbacks();
@@ -42,6 +43,7 @@ export class Chessboard{
         let cords = this.addChild(boardContainer, "div", "cords");
         let blackPlayer = this.addChild(cords, "div", "player black");
         this.element = this.addChild(cords, "div", "board");
+        this.squareContainer = this.addChild(this.element, "div", "squares");
         let whitePlayer = this.addChild(cords, "div", "player white");
         
         let blackCapture = this.addChild(blackPlayer, "div", "captures");
@@ -84,11 +86,11 @@ export class Chessboard{
     private createEmptySquares(): Record<string, Square>{
         let newSquares: Record<string, Square> = {};
         squareKeys.forEach(key =>{
-            let squareElement = this.addChild(this.element, "div", "square");
+            let squareElement = this.addChild(this.squareContainer, "div", "");
             squareElement.setAttribute("data-key", key);
             this.squares[key] = new Square(squareElement, key);
         });
-        this.addChild(this.element, "div", "clearer");
+        this.addChild(this.squareContainer, "span", "clearer");
         return newSquares;
     }
     setFen(fen:string, clearFirst:boolean){

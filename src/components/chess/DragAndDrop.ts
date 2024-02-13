@@ -4,7 +4,6 @@ import { Shared } from "./Shared";
 export default class DragAndDrop
 {
     private chessboard:Chessboard;
-    private boardElement: HTMLElement;
     private dragType:string;
     private callbackOnDrop:Function;
     private dragPiece: HTMLElement | null = null;
@@ -18,7 +17,6 @@ export default class DragAndDrop
     constructor(chessboard:Chessboard, dragType:string, callbackOnDrop:Function)
     {
         this.chessboard = chessboard;
-        this.boardElement = chessboard.element;
         this.dragType = dragType;
         this.callbackOnDrop = callbackOnDrop;
 
@@ -26,7 +24,6 @@ export default class DragAndDrop
         document.addEventListener("mousemove", (event) => this.handleMouseMove(event) );
         document.addEventListener("mouseup", (event) => this.handleMouseUp(event) );
         document.addEventListener("scroll", () => this.handleScroll() );
-        document.addEventListener("contextmenu", (event) => this.handleContextMenu(event) );
         this.preparePieces();
     }
     preparePieces(){
@@ -38,38 +35,22 @@ export default class DragAndDrop
     }
     private handleMouseDown(event:MouseEvent)
     {
-        if (Shared.isClickOnChessboard(event, this.boardElement))
+        let isRightClick = event.button && event.button == 2;
+        if (!isRightClick && event.target && Shared.isClickOnChessboard(event, this.chessboard))
         {
-            if (!event.target)
-                return false;
-            else{
-                let isRightClick = event.button && event.button == 2;
-                if (!isRightClick) {
-                    this.chessboard.removeAllHighlights();
-                    let target = event.target as HTMLElement;
-                    let squareElement: HTMLElement | null = null;
-                    let pieceeElement: HTMLElement | null = null;
-                    if (target.classList.contains("square"))
-                        squareElement = target as HTMLElement;
-                    else if (target.classList.contains("piece")){
-                        pieceeElement = target as HTMLElement;
-                        if (target.parentNode)
-                            squareElement = target.parentNode as HTMLElement;
-                    }
-                    if (squareElement && pieceeElement && pieceeElement.classList.contains("allow-drag"))
-                    {
-                        squareElement.classList.add("source");
-                        this.dragPiece = event.target as HTMLElement;
-                        this.dragPiece.classList.add("dragging");
-                        let rect = this.dragPiece.getBoundingClientRect();
-                        this.dragStartX = rect.left;
-                        this.dragStartY = rect.top;
-                        this.scrollTop = document.documentElement.scrollTop;// Drag position will be incorrect if we don't take scroll into consideration
-                        this.deltaScrollTop = 0; // Used to adjust the drag position if scrolling occurs during the drag
-                        this.scrollLeft = document.documentElement.scrollLeft;
-                        this.deltaScrollLeft = 0;
-                    }
-                }
+            this.chessboard.removeAllHighlights();
+            let target = event.target as HTMLElement;
+            if (target.classList.contains("piece") && target.classList.contains("allow-drag")){
+                target.parentElement!.classList.add("source");
+                this.dragPiece = event.target as HTMLElement;
+                this.dragPiece.classList.add("dragging");
+                let rect = this.dragPiece.getBoundingClientRect();
+                this.dragStartX = rect.left;
+                this.dragStartY = rect.top;
+                this.scrollTop = document.documentElement.scrollTop;// Drag position will be incorrect if we don't take scroll into consideration
+                this.deltaScrollTop = 0; // Used to adjust the drag position if scrolling occurs during the drag
+                this.scrollLeft = document.documentElement.scrollLeft;
+                this.deltaScrollLeft = 0;
             }
             event.preventDefault();
         }
@@ -85,28 +66,20 @@ export default class DragAndDrop
     }
     private handleMouseUp(event:MouseEvent)
     {
-        if (Shared.isClickOnChessboard(event, this.chessboard.element))
-        {
-            if (this.dragPiece) {
+        if (this.dragPiece) {
+            this.dragPiece.style.left = "50%";
+            this.dragPiece.style.top = "50%";
+            this.dragPiece.classList.remove("dragging");
+            if (Shared.isClickOnChessboard(event, this.chessboard)){
                 event.preventDefault();
-                let boardWidthAndHeight = this.boardElement.clientWidth;
-                let squareWidthAndHeight = boardWidthAndHeight / 8;
-                let boardCoordinateX = event.clientX - this.boardElement.offsetLeft + document.documentElement.scrollLeft;
-                let boardCoordinateY = event.clientY - this.boardElement.offsetTop + document.documentElement.scrollTop;
-                let rowIndex = Math.floor(boardCoordinateY / squareWidthAndHeight);
-                let columnIndex = Math.floor(boardCoordinateX / squareWidthAndHeight);
-                let targetSquareIndex = (rowIndex * 8) + columnIndex;
-                let targetSquareElement = this.boardElement.children[targetSquareIndex] as HTMLElement;
+                let targetSquareElement = Shared.getClickedSquare(event, this.chessboard);
                 if (targetSquareElement !== this.dragPiece.parentElement){
                     let sourceSquareKey = this.dragPiece.parentElement?.getAttribute("data-key");
                     let targetSquareKey = targetSquareElement.getAttribute("data-key");
                     this.callbackOnDrop(sourceSquareKey!, targetSquareKey!);
                 }
-                this.dragPiece.style.left = "50%";
-                this.dragPiece.style.top = "50%";
-                this.dragPiece.classList.remove("dragging");
-                this.dragPiece = null;
             }
+            this.dragPiece = null;
         }
     }
     private handleScroll()
@@ -122,19 +95,6 @@ export default class DragAndDrop
             let clientY = parseInt(this.dragPiece.style.top);
             this.dragPiece.style.left = clientX + changeInDeltaX + "px";
             this.dragPiece.style.top = clientY + changeInDeltaY + "px";
-        }
-    }
-    private handleContextMenu(event:MouseEvent)
-    {        
-        if (Shared.isClickOnChessboard(event, this.chessboard.element))
-            event.preventDefault();
-    }
-    cancelAnimatedMoves(){
-        if (this.dragPiece){
-            this.dragPiece.style.transitionProperty = "";
-            this.dragPiece.style.left = "";
-            this.dragPiece.style.top = "";
-            this.dragPiece = null;
         }
     }
 }

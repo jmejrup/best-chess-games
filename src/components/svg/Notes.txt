@@ -1,0 +1,28 @@
+Openings page:
+    Chessboard (Cords, Arrows)
+        Interface:
+            SetFen
+            GetAllpieces
+            AddPieceToPosition
+            RemovePieceFromPosition
+            PromotePiece
+            
+PGN viewer (History):
+    Chessboard
+    MovePieces
+    Autoplay
+    chess.js
+Game page
+    Chessboard
+    Mouselayer
+    DragAndDrop
+    Autoplay
+    chess.js
+    And more...
+----------
+Chessboard (Cords, Arrows)
+PlayerInfo (Captures and player name)
+History (Browse a game including Autoplay)
+Chessgame (DragAndDrop, Mouselayer)
+
+AddOn: Screenshot of board (with or without playerinfo)

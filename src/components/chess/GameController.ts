@@ -85,6 +85,7 @@ export class GameController{
                     }
                     let move = game.moves[moveIndex];
                     this.chessboard.setFen(move.after, true);
+                    debugger;
                     this.chessboard.squares[move.from].element.classList.add("source");
                     this.chessboard.squares[move.to].element.classList.add("target");
                 }

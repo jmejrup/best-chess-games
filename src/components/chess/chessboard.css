@@ -5,13 +5,13 @@
     position: relative;
     background-image: url("./assets/img/boards/green.png");
 }
-.board > .square {
+.board > .squares div {
     width: 12.5%;
     float: left;
     padding: 0;
     position: relative; /* Pieces will have absolute position relative to the square */
 }
-.board > .square:after {
+.board > .squares div:after {
     content: "";
     display: block;
     padding-bottom: 100%; /* Ensure that height of square always equals width of square */
@@ -81,13 +81,13 @@
     left: 50%;
     transform: translate(-50%, -50%);
 }
-.board > .square.source {
+.board > .squares div.source {
     background-color: rgb(255, 255, 51, 0.3);
 }
-.board > .square.target {
+.board > .squares div.target {
     background-color: rgb(255, 255, 51, 0.4);
 }
-.board > .square.right-clicked {
+.board > .squares div.right-clicked {
     background-color: rgb(235, 97, 80, 0.8);
 }
 .board .piece.allow-drag {
@@ -98,22 +98,23 @@
     cursor:pointer;
 }
 .clearer{
+    display:block;
     clear:both;
     line-height:0;
     height:0;
     padding:0;
     margin:0;
 }
-.board .square .result{
+.board .squares div .result{
     position:absolute;
     z-index:10.000;
 }
-.board .square .result.win{
+.board .squares div .result.win{
     right: 0;
     width:34%;
     height:34%;
 }
-.board .square .result.loose{
+.board .square div .result.loose{
     top:-2%;
     right: 0;
     width:32%;
@@ -122,4 +123,12 @@
 .board-svg{
     position:absolute;
     z-index:1;
+}
+.board-svg .arrow{
+    fill:rgba(255, 170, 0, 0.8);
+    stroke-width:0;
+}
+.board-svg .arrow:hover{
+    fill:red;
+    stroke-width:0;
 }

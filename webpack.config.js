@@ -1,5 +1,6 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const HtmlWebpackInlineSVGPlugin = require("html-webpack-inline-svg-plugin");
 
 module.exports = {
   mode: 'development',
@@ -27,6 +28,9 @@ module.exports = {
     new HtmlWebpackPlugin(
       { chunks:['openings'], title:'Chess Openings', filename: 'openings.html', template:"./src/pages/openings/openings.html",  inject:"head" }
     ),
+    new HtmlWebpackInlineSVGPlugin({
+      runPreEmit: true,
+    }),
   ],
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
@@ -52,7 +56,11 @@ module.exports = {
       {
         test: /\.svg/,
         type: 'asset/inline',
-      }
+      },
+      {
+        test: /\.xml$/i,
+        use: ['xml-loader'],
+      },
     ],
   },
 };

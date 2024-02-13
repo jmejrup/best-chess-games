@@ -5,60 +5,59 @@ export default class Arrows{
     chessboard:Chessboard;
     horizontal = ["a", "b", "c", "d", "e", "f", "g", "h"];
     vertical = ["8", "7", "6", "5", "4", "3", "2", "1"];
-    svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg:SVGSVGElement|null = null;
     strokeWidth = 2.8;
-    strokeColor = "rgba(255, 170, 0, 0.8)";
+    rightClickedSquare:HTMLElement|null = null;
 
     constructor(chessboard:Chessboard){
         this.chessboard = chessboard;
-        this.svg.classList.add('board-svg');
-        this.chessboard.element.prepend(this.svg);
-        this.svg.setAttribute('viewBox', '0 0 100 100');
-        this.svg.setAttribute('stroke', this.strokeColor);
-        this.svg.setAttribute('opacity', "0.8");//??
         chessboard.callbacks.onRotate = this.onChessboardRotate;
         if (chessboard.isRotated)
             this.onChessboardRotate(true);
-        this.draw("g8", "f6");
         document.addEventListener("mousedown", (event) => this.handleMouseDown(event) );
         document.addEventListener("mouseup", (event) => this.handleMouseUp(event) );
         document.addEventListener("contextmenu", (event) => this.handleContextMenu(event) );
     }
     handleMouseDown(event:MouseEvent){
-        if (Shared.isClickOnChessboard(event, this.chessboard.element))
+        let isRightClick = event.button && event.button == 2;
+        if (isRightClick && event.target && Shared.isClickOnChessboard(event, this.chessboard))
         {
-            if (!event.target)
-                return false;
-            else{
-                let target = event.target as HTMLElement;
-                let squareElement: HTMLElement | null = null;
-                let pieceeElement: HTMLElement | null = null;
-                if (target.classList.contains("square"))
-                    squareElement = target as HTMLElement;
-                else if (target.classList.contains("piece")){
-                    pieceeElement = target as HTMLElement;
-                    if (target.parentNode)
-                        squareElement = target.parentNode as HTMLElement;
-                }
-                let isRightClick = event.button && event.button == 2;
-                if (isRightClick) {
-                    if (squareElement){
-                        if (squareElement.classList.contains("right-clicked"))
-                            squareElement.classList.remove("right-clicked");
-                        else
-                            squareElement.classList.add("right-clicked");
-                    }
-                }
-            }
+            this.rightClickedSquare = Shared.getClickedSquare(event, this.chessboard);
             event.preventDefault();
+        }
+        else if(this.svg){
+            this.chessboard.element.removeChild(this.svg);
+            this.svg = null;
         }
     }
     handleMouseUp(event:MouseEvent){
-        
+        let isRightClick = event.button && event.button == 2;
+        if (isRightClick && event.target && Shared.isClickOnChessboard(event, this.chessboard))
+        {
+            let targetSquare = Shared.getClickedSquare(event, this.chessboard);
+            if (targetSquare){
+                if (this.rightClickedSquare === targetSquare){
+                    if (targetSquare.classList.contains("right-clicked")){
+                        targetSquare.classList.remove("right-clicked");
+                    }
+                    else{
+                        targetSquare.classList.add("right-clicked");
+                    }
+                }
+                else if (this.rightClickedSquare){
+                    let sourceSquareKey = this.rightClickedSquare.getAttribute("data-key")!;
+                    let targetSquareKey = targetSquare.getAttribute("data-key")!;
+                    this.drawArrow(sourceSquareKey, targetSquareKey);
+                }
+                
+            }
+            event.preventDefault();
+        }
+        this.rightClickedSquare = null;
     }
     private handleContextMenu(event:MouseEvent)
     {        
-        if (Shared.isClickOnChessboard(event, this.chessboard.element)){
+        if (Shared.isClickOnChessboard(event, this.chessboard)){
             event.preventDefault();
         }
     }
@@ -66,7 +65,13 @@ export default class Arrows{
         this.horizontal = this.horizontal.reverse();
         this.vertical = this.vertical.reverse();
     }
-    draw(squareKey1:string, squareKey2:string){
+    drawArrow(squareKey1:string, squareKey2:string){
+        if (this.svg === null){
+            this.svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            this.svg.classList.add('board-svg');
+            this.svg.setAttribute('viewBox', '0 0 100 100');
+            this.chessboard.element.prepend(this.svg);
+        }
         const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
         let point1 = this.svg.createSVGPoint();
         let point2 = this.svg.createSVGPoint();
@@ -79,20 +84,20 @@ export default class Arrows{
         let from = this.getRelativeCenter(squareKey1);
         let to = this.getRelativeCenter(squareKey2);
         let distance = Math.sqrt(Math.pow(to.x - from.x, 2) + Math.pow(to.y -from.y, 2));
-        let shortenedDistanceFrom = 4.5;
-        let center = new DOMPoint((from.x + to.x)/2, (from.y + to.y)/2);
+        let shortenDistance = 4.5;
+        let center = { x: (from.x + to.x)/2, y: (from.y + to.y)/2 };
         let triangleSideLength = 5;
         let a = triangleSideLength / 2;
         let c = triangleSideLength;
         let heightOfTriangle = Math.sqrt(Math.pow(c, 2) - Math.pow(a,2));
 
-        point1.x = center.x - (distance / 2) + shortenedDistanceFrom;
+        point1.x = center.x - (distance / 2) + shortenDistance;
         point1.y = center.y - this.strokeWidth / 2;
 
         point2.x = point1.x;
         point2.y = point1.y + this.strokeWidth;
 
-        point3.x = point2.x + distance - heightOfTriangle - shortenedDistanceFrom;
+        point3.x = point2.x + distance - heightOfTriangle - shortenDistance;
         point3.y = point2.y;
 
         point4.x = point3.x;
@@ -112,8 +117,9 @@ export default class Arrows{
 
         let radian = Math.atan2(deltaY, deltaX);
         let degrees = radian * 180 / Math.PI;
+
         polygon.setAttribute('transform', "rotate(" + degrees + " " + center.x.toString() + " " + center.y.toString() + ")");
-        
+        polygon.setAttribute("class", "arrow");
         polygon.points.appendItem(point1);
         polygon.points.appendItem(point2);
         polygon.points.appendItem(point3);
@@ -121,17 +127,13 @@ export default class Arrows{
         polygon.points.appendItem(point5);
         polygon.points.appendItem(point6);
         polygon.points.appendItem(point7);
-
-        polygon.setAttribute('stroke-width', "0");
-        polygon.setAttribute('fill', this.strokeColor);
         this.svg.appendChild(polygon);
     }
-    getRelativeCenter(squareKey:string):DOMPoint{
-        let point = this.svg.createSVGPoint();
+    getRelativeCenter(squareKey:string){
         let char = squareKey[0];
         let digit = squareKey[1];
-        point.x = (this.horizontal.indexOf(char) * 12.5) + 6.25;
-        point.y = (this.vertical.indexOf(digit) * 12.5) + 6.25;
-        return point;
+        let x = (this.horizontal.indexOf(char) * 12.5) + 6.25;
+        let y = (this.vertical.indexOf(digit) * 12.5) + 6.25;
+        return { x, y };
     }
 }

@@ -4,12 +4,34 @@
         <title>Stockfish</title>
         <link rel="shortcut icon" href="">
         <meta name="robots" content="noindex">
-    <script defer src="/runtime.033d4ae73aabe2f3cfde.js"></script><script defer src="/stockfish.4eeb278e3cd2d055058f.js"></script></head>
+    <script defer src="/runtime.033d4ae73aabe2f3cfde.js"></script><script defer src="/stockfish.ec9f237cd3ea4b750520.js"></script></head>
 <body>
     <h1>Hello Stockfish</h1>
-
-
-    
-    
+    <div id="chess-container">
+        <div class="cords" style="padding-left:5%;padding-bottom:5%;background-image:url(cords.svg)">
+            <div class="player white">
+                <div class="captures">
+                    <span class="p"></span><span class="r"></span><span class="n"></span><span class="b"></span><span class="q"></span>
+                    <span class="score"></span>
+                </div>
+                <div class="name"></div>
+            </div>
+            <div class="board">
+                <svg class="board-svg" style="position:absolute;z-index:1"></svg>
+                <div class="squares">
+                    <div data-key="a1">
+                        <img class="piece" style="position:absolue;z-index:2">
+                    </div>
+                </div>
+            </div>
+            <div class="player white">
+                <div class="captures">
+                    <span class="p"></span><span class="r"></span><span class="n"></span><span class="b"></span><span class="q"></span>
+                    <span class="score"></span>
+                </div>
+                <div class="name"></div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
