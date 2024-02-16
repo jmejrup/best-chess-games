@@ -7,8 +7,6 @@ export default class MouseLayer{
 
     constructor(svgRoot:SVGSVGElement){
         this.svgRoot = svgRoot;
-    }
-    init(){
         let group = document.createElementNS("http://www.w3.org/2000/svg","g");
         group.setAttribute("fill-opacity", "0");
         this.svgRoot.appendChild(group);

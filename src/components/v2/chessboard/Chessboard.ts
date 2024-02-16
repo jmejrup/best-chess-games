@@ -2,7 +2,6 @@ import BoardLayer from "./Layers/BoardLayer";
 import CordsLayer from "./Layers/CordsLayer";
 import PieceLayer from "./Layers/PieceLayer";
 import ArrowLayer from "./Layers/ArrowLayer";
-import MouseLayer from "./Layers/MouseLayer";
 import MouseEvents from "./MouseEvents";
 import Shared from "./Shared";
 
@@ -12,7 +11,6 @@ export default class Chessboard{
     private cordsLayer:CordsLayer;
     private pieceLayer:PieceLayer;
     private arrowLayer:ArrowLayer;
-    private mouseLayer:MouseLayer;
     private mouseEvents:MouseEvents
     private isRotated = false;
 
@@ -23,11 +21,9 @@ export default class Chessboard{
         chessContainer.appendChild(this.svgRoot);
 
         this.boardLayer = new BoardLayer(this.svgRoot, isRotated);
-        this.mouseLayer = new MouseLayer(this.svgRoot);
         this.cordsLayer = new CordsLayer(this.svgRoot, isRotated);
-        this.pieceLayer = new PieceLayer(this.svgRoot, isRotated, this.mouseLayer);
-        this.arrowLayer = new ArrowLayer(this.svgRoot, this.isRotated);
-        this.mouseLayer.init();
+        this.pieceLayer = new PieceLayer(this.svgRoot, isRotated);
+        this.arrowLayer = new ArrowLayer(this.svgRoot, isRotated);
         this.mouseEvents = new MouseEvents(this.svgRoot, this.boardLayer, this.arrowLayer, this.isRotated);
 
         this.setFen(fen, false);

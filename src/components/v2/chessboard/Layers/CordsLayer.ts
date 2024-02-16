@@ -1,5 +1,3 @@
-
-
 export default class CordsLayer{
     private group:SVGGElement;
     private horizontalGroup:SVGGElement;

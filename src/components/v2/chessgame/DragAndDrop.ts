@@ -4,10 +4,13 @@ import Chessboard from "../chessboard/Chessboard";
 import Shared from "../chessboard/Shared";
 import DragPieceFactory from "./DragPieceFactory";
 import DragPiece from "./DragPiece";
+import MouseLayer from "./MouseLayer";
+import { debug } from "webpack";
 
 export default class DragAndDrop{
     private chessboard:Chessboard;
-    private chess:Chess;
+    private mouseLayer: MouseLayer;
+    private chess:Chess|null = null;
     private sourceSquare:Square|null = null;
     private dragPiece:DragPiece|null = null;
     private scrollTop = 0;
@@ -17,10 +20,10 @@ export default class DragAndDrop{
     private dragContainer = document.createElement("div");
     private isRotated:boolean;
 
-    constructor(chess:Chess, chessboard:Chessboard, isRotated:boolean){
-        this.chess = chess;
+    constructor(chessboard:Chessboard, isRotated:boolean, mouseLayer:MouseLayer){
         this.chessboard = chessboard;
         this.isRotated = isRotated;
+        this.mouseLayer = mouseLayer;
         this.dragContainer.style.position = "absolute";
         this.dragContainer.style.transform = "translate(-50%,-50%)";
         chessboard.svgRoot.parentElement!.prepend(this.dragContainer);
@@ -47,29 +50,56 @@ export default class DragAndDrop{
             this.onScroll();
         });
     }
+    startGame(fen:string){
+        this.mouseLayer.clear();
+        if (fen === "start"){
+            fen = Shared.startFEN;
+        }
+        if (fen !== ""){
+            this.chess = new Chess(fen);
+            fen = fen.split(" ")[0].split("/").join("");
+            let squareIndex = 0;
+            for (let i = 0; i < fen.length; i++){
+                let fenChar = fen[i];
+                let nummericValue = parseInt(fenChar);
+                if (!isNaN(nummericValue)){
+                    squareIndex += nummericValue;
+                }
+                else{
+                    let rotatedIndex = this.isRotated ? 63 - squareIndex : squareIndex;
+                    let key = Shared.getSquareKeyByIndex(rotatedIndex, this.isRotated);
+                    this.mouseLayer.enableHover(key, this.isRotated);
+                    squareIndex++;
+                }
+            }
+        }
+    }
     rotate(isRotated:boolean){
         this.isRotated = isRotated;
     }
     onLeftButtonDown(event:MouseEvent){
-        // This is the rectangle in our mouselayer that ensures cursor:pointer on hover
-        let rect = event.target as HTMLElement;
-        // We have given the square a data-index attribute so it's a little easier to
-        // determine what square was clicked and update whether it should enable hover or not
-        let squareIndex = parseInt(rect.getAttribute("data-index")!);
-        // We can use the index of the square to find the square key.
-        let square = Shared.getSquareKeyByIndex(squareIndex, this.isRotated) as Square;
-        this.sourceSquare = square;
-        let pieceDef = this.chess.get(square);
-        if (pieceDef){
-            let fenChar = pieceDef.color === "b" ? pieceDef.type : pieceDef.type.toUpperCase();
-            this.dragPiece = DragPieceFactory.get(fenChar);
-            if (this.dragPiece){
-                this.scrollTop = document.documentElement.scrollTop;// Drag position will be incorrect if we don't take scroll into consideration
-                this.deltaScrollTop = 0; // Used to adjust the drag position if scrolling occurs during the drag
-                this.scrollLeft = document.documentElement.scrollLeft;
-                this.deltaScrollLeft = 0;
+        if (this.chess){ //Only act if game has started
+            // This is the rectangle in our mouselayer that ensures cursor:pointer on hover
+            let rect = event.target as HTMLElement;
+            // We have given the square a data-index attribute so it's a little easier to
+            // determine what square was clicked and update whether it should enable hover or not
+            let squareIndex = parseInt(rect.getAttribute("data-index")!);
+            // We can use the index of the square to find the square key.
+            let square = Shared.getSquareKeyByIndex(squareIndex, this.isRotated) as Square;
+            this.sourceSquare = square;
+            let pieceDef = this.chess.get(square);
+            if (pieceDef){
+                let fenChar = pieceDef.color === "b" ? pieceDef.type : pieceDef.type.toUpperCase();
+                this.dragPiece = DragPieceFactory.get(fenChar);
+                if (this.dragPiece){
+                    this.scrollTop = document.documentElement.scrollTop;// Drag position will be incorrect if we don't take scroll into consideration
+                    this.deltaScrollTop = 0; // Used to adjust the drag position if scrolling occurs during the drag
+                    this.scrollLeft = document.documentElement.scrollLeft;
+                    this.deltaScrollLeft = 0;
+                }
             }
         }
+        
     }
     onMouseMove(event:MouseEvent){
         if (this.dragPiece && this.sourceSquare) {
@@ -100,7 +130,7 @@ export default class DragAndDrop{
         }
     }
     onMouseUp(event:MouseEvent){
-        if (this.dragPiece){
+        if (this.chess && this.dragPiece){
             let svgParent = this.chessboard.svgRoot.parentElement as HTMLElement;
             if (this.isClickOnElement(event, svgParent)){
                 let targetSquare = Shared.getSquareByCursorPosition(this.chessboard.svgRoot, event, this.isRotated) as Square;
@@ -118,6 +148,8 @@ export default class DragAndDrop{
                         }
                         this.chessboard.addPiece(this.dragPiece.fenChar, targetSquare);
                         this.chessboard.highlightSourceAndTarget(from, to);
+                        this.mouseLayer.disableHover(from, this.isRotated);
+                        this.mouseLayer.enableHover(to, this.isRotated);
                     }
                     catch(ex){
                         this.cancelDrag();
