@@ -9,12 +9,12 @@ interface Highlight{
 export default class BoardLayer{
     private svgRoot:SVGSVGElement;
     private isRotated:boolean;
+    private sourceHighlight:Highlight;
+    private targetHighlight:Highlight;
+    private sourceTargetGroup:SVGGElement;
     private sourceColor = "rgba(255, 255, 51, 0.3)";
     private targetColor = "rgba(255, 255, 51, 0.4)";
     private rightClickColor = "rgb(235, 97, 80, 0.8)";
-    private sourceHighlight:Highlight;
-    private targetHighlight:Highlight;
-    private sourceAndTargetGroup:SVGGElement;
     private rightClickGroup:SVGGElement;
     private rightClicks:Record<string, Highlight|null> = {};
     private rightClickedSquareKey:string|null = null;
@@ -34,15 +34,15 @@ export default class BoardLayer{
             });
             colors = colors.reverse();
         });
-        this.sourceAndTargetGroup = document.createElementNS("http://www.w3.org/2000/svg","g");
-        this.svgRoot.appendChild(this.sourceAndTargetGroup);
+        this.sourceTargetGroup = document.createElementNS("http://www.w3.org/2000/svg","g");
+        this.svgRoot.appendChild(this.sourceTargetGroup);
         
         this.sourceHighlight = {squareKey: "a8", type: "source", rect: SVGSquare.createRect(0,0)};
         this.targetHighlight = {squareKey: "a7", type: "target", rect: SVGSquare.createRect(1,0)};
         this.sourceHighlight.rect.setAttribute("fill", "transparent");
         this.targetHighlight.rect.setAttribute("fill", "transparent");
-        this.sourceAndTargetGroup.appendChild(this.sourceHighlight.rect);
-        this.sourceAndTargetGroup.appendChild(this.targetHighlight.rect);
+        this.sourceTargetGroup.appendChild(this.sourceHighlight.rect);
+        this.sourceTargetGroup.appendChild(this.targetHighlight.rect);
 
         this.rightClickGroup = document.createElementNS("http://www.w3.org/2000/svg","g");
         this.svgRoot.appendChild(this.rightClickGroup);
@@ -75,7 +75,7 @@ export default class BoardLayer{
             }
         });
     }
-    showTargetAndSource(from:string, to:string){
+    highlightSourceAndTarget(from:string, to:string){
         this.clearAllHighlights();
         this.showTargetOrSource(from, this.sourceHighlight, this.sourceColor);
         this.showTargetOrSource(to, this.targetHighlight, this.targetColor);

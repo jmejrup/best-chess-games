@@ -1,7 +1,4 @@
-import Icons from "../../components/chess/Icons";
 import "./openings.css";
-import { createBackground, setTargetAndSource, getBoundingBoxOfSvgPath } from "./Background";
-import board2 from "./board2.svg";
 import Chessboard from "../../components/v2/chessboard/Chessboard";
 import GameBrowser from "../../components/v2/gameBrowser/GameBrowswer";
 import Chessgame from "../../components/v2/chessgame/Chessgame";
@@ -15,11 +12,13 @@ import Chessgame from "../../components/v2/chessgame/Chessgame";
 // let browserContainer = document.getElementById("gameBrowser") as HTMLElement;
 // let gameBrowser = new GameBrowser(browserContainer, fen, false);
 
+
+
 let gameContainer = document.getElementById("chessgame") as HTMLElement;
 let chessgame = new Chessgame(gameContainer, "start", true);
 
-
-
+let testButton = document.getElementById("rotate") as HTMLButtonElement;
+testButton.onclick = () => {chessgame.rotate()};
 
 // let img = document.getElementById("my-img") as HTMLImageElement;
 // img.src = board2;

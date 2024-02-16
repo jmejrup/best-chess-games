@@ -70,7 +70,7 @@ export default class Chessboard{
     removePiece(squareKey:string){
         this.pieceLayer.removePiece(squareKey);
     }
-    showMoveHighlights(from:string, to:string){
-        this.boardLayer.showTargetAndSource(from, to);
+    highlightSourceAndTarget(from:string, to:string){
+        this.boardLayer.highlightSourceAndTarget(from, to);
     }
 }

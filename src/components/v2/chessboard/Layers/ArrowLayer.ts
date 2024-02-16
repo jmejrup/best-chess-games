@@ -38,8 +38,8 @@ export default class ArrowLayer{
             this.drawArrow(this.rightClickedSquareKey, squareKey);
         }
     }
-    private drawArrow(squareKey1:string, squareKey2:string){
-        this.currentArrows.push({from:squareKey1, to:squareKey2});
+    private drawArrow(fromSquare:string, toSquare:string){
+        this.currentArrows.push({from:fromSquare, to:toSquare});
         const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
         let point1 = this.svgRoot.createSVGPoint();
         let point2 = this.svgRoot.createSVGPoint();
@@ -49,8 +49,8 @@ export default class ArrowLayer{
         let point6 = this.svgRoot.createSVGPoint();
         let point7 = this.svgRoot.createSVGPoint();
 
-        let from = this.getRelativeCenter(squareKey1);
-        let to = this.getRelativeCenter(squareKey2);
+        let from = this.getRelativeCenter(fromSquare);
+        let to = this.getRelativeCenter(toSquare);
         let distance = Math.sqrt(Math.pow(to.x - from.x, 2) + Math.pow(to.y -from.y, 2));
         let shortenDistance = 30;
         let center = { x: (from.x + to.x)/2, y: (from.y + to.y)/2 };

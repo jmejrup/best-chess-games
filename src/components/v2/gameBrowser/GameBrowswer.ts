@@ -8,6 +8,7 @@ export default class GameBrowser{
     container:HTMLElement;
     chessboard:Chessboard;
 
+    private isRotated: boolean;
     private whiteCaptures:Record<string, HTMLElement> = {};
     private blackCaptures:Record<string, HTMLElement> = {};
     private score = 0;
@@ -17,6 +18,7 @@ export default class GameBrowser{
     private blackPlayerName:HTMLElement;
 
     constructor(container:HTMLElement, fen:string, isRotated:boolean){
+        this.isRotated = isRotated;
         this.container = container;
         let blackPlayer = this.addChild(this.container, "div", "player black");
         let boardContainer = this.addChild(container, "div", "cboard");
@@ -41,6 +43,9 @@ export default class GameBrowser{
         if (fen){
             this.setScoreAndCaputereByFen(fen);
         }
+    }
+    rotate(){
+        this.chessboard.rotate();
     }
     private addChild(parent:HTMLElement, tag:string, className:string, text?:string){
         let child = document.createElement(tag);

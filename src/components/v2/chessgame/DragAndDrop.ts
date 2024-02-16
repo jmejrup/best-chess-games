@@ -117,7 +117,7 @@ export default class DragAndDrop{
                             this.chessboard.removePiece(targetSquare!);
                         }
                         this.chessboard.addPiece(this.dragPiece.fenChar, targetSquare);
-                        this.chessboard.showMoveHighlights(from, to);
+                        this.chessboard.highlightSourceAndTarget(from, to);
                     }
                     catch(ex){
                         this.cancelDrag();
