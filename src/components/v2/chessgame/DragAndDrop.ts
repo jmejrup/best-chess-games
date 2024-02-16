@@ -1,10 +1,9 @@
 // import MouseLayer from "../chessboard/Layers/MouseLayer";
-import { Chess, Square, Move } from "chess.js";
+import { Chess, Square } from "chess.js";
 import Chessboard from "../chessboard/Chessboard";
-import { PieceFactory } from "../chessboard/PieceFactory";
 import Shared from "../chessboard/Shared";
-import { DragPieceFactory } from "./DragPieceFactory";
-import { DragPiece } from "./DragPiece";
+import DragPieceFactory from "./DragPieceFactory";
+import DragPiece from "./DragPiece";
 
 export default class DragAndDrop{
     private chessboard:Chessboard;

@@ -1,5 +1,5 @@
-import { Piece } from "../Piece";
-import { PieceFactory } from "../PieceFactory";
+import Piece from "../Piece";
+import PieceFactory from "../PieceFactory";
 import MouseLayer from "./MouseLayer";
 import Shared from "../Shared";
 

@@ -1,4 +1,4 @@
-import {PieceFactory} from "../chessboard/PieceFactory";
+import PieceFactory from "../chessboard/PieceFactory";
 
 const pieceTypes: Record<string, SVGSVGElement> = {};
 

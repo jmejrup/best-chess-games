@@ -72,8 +72,9 @@ function loadChildren(g:SVGGElement, group:Group, color:number){
         loadChildren(childGroup, group.g, color);
     }
 }
-export namespace PieceFactory{
+namespace PieceFactory{
     export function get(fenChar:string):SVGGElement{
         return pieceTypes[fenChar].cloneNode(true) as SVGGElement;
     }
 }
+export default PieceFactory;

@@ -1,5 +1,5 @@
-import {PieceFactory} from "../chessboard/PieceFactory";
-import { DragPiece } from "./DragPiece";
+import PieceFactory from "../chessboard/PieceFactory";
+import DragPiece from "./DragPiece";
 
 const pieceTypes: Record<string, DragPiece> = {};
 
@@ -11,8 +11,9 @@ const pieceTypes: Record<string, DragPiece> = {};
     let dragPiece:DragPiece = {fenChar, svg};
     pieceTypes[fenChar] = dragPiece;
 });
-export namespace DragPieceFactory{
+namespace DragPieceFactory{
     export function get(fenChar:string){
         return pieceTypes[fenChar] as DragPiece;
     }
 }
+export default DragPieceFactory;
