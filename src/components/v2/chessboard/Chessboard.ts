@@ -3,38 +3,34 @@ import CordsLayer from "./Layers/CordsLayer";
 import PieceLayer from "./Layers/PieceLayer";
 import ArrowLayer from "./Layers/ArrowLayer";
 import MouseLayer from "./Layers/MouseLayer";
-import DragAndDrop from "./DragAndDrop";
 import MouseEvents from "./MouseEvents";
 import Shared from "./Shared";
-import Screenshot from "./Screenshot";
 
 export default class Chessboard{
     svgRoot:SVGSVGElement;
     private boardLayer:BoardLayer;
     private cordsLayer:CordsLayer;
-    pieceLayer:PieceLayer;
+    private pieceLayer:PieceLayer;
     private arrowLayer:ArrowLayer;
     private mouseLayer:MouseLayer;
-    private mouseEvents:MouseEvents;
-    private dragAndDrop:DragAndDrop;
+    private mouseEvents:MouseEvents
     private isRotated = false;
 
-    constructor(chessContainer:HTMLElement|SVGGElement, fen:string, isRotated:boolean){
-        this.boardLayer = new BoardLayer(isRotated);
-        this.svgRoot = this.boardLayer.svgRoot;
+    constructor(chessContainer:HTMLElement, fen:string, isRotated:boolean){
+        this.isRotated = isRotated;
+        this.svgRoot = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        this.svgRoot.setAttribute('viewBox', '0 0 800 800');
         chessContainer.appendChild(this.svgRoot);
+
+        this.boardLayer = new BoardLayer(this.svgRoot, isRotated);
         this.mouseLayer = new MouseLayer(this.svgRoot);
-        this.cordsLayer = new CordsLayer(this.svgRoot);
-        this.pieceLayer = new PieceLayer(this.svgRoot, this.boardLayer, this.mouseLayer);
-        this.arrowLayer = new ArrowLayer(this.svgRoot);
-        this.dragAndDrop = new DragAndDrop(this.pieceLayer, this.svgRoot, isRotated);
+        this.cordsLayer = new CordsLayer(this.svgRoot, isRotated);
+        this.pieceLayer = new PieceLayer(this.svgRoot, isRotated, this.mouseLayer);
+        this.arrowLayer = new ArrowLayer(this.svgRoot, this.isRotated);
         this.mouseLayer.init();
-        this.mouseEvents = new MouseEvents(this.boardLayer, this.arrowLayer, this.dragAndDrop, this.isRotated);
+        this.mouseEvents = new MouseEvents(this.svgRoot, this.boardLayer, this.arrowLayer, this.isRotated);
 
         this.setFen(fen, false);
-    }
-    test(){
-        this.rotate();
     }
     rotate(){
         this.isRotated = !this.isRotated;
@@ -42,22 +38,15 @@ export default class Chessboard{
         this.cordsLayer.rotate(this.isRotated);
         this.pieceLayer.rotate(this.isRotated);
         this.arrowLayer.rotate(this.isRotated);
-        this.dragAndDrop.rotate(this.isRotated);
         this.mouseEvents.rotate(this.isRotated);
     }
     setFen(fen:string, clearFirst:boolean){
         if (clearFirst){
             this.pieceLayer.clear();
-            
-            // Object.values(this.whiteCaptures).concat(Object.values(this.blackCaptures)).forEach(element =>{
-            //     element.innerHTML = "";
-            // });
-            // this.pieceElements = [];
-            // this.setScore(0);
         }
         if (fen !== ""){
             if (fen.toLowerCase() === "start")
-                fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+                fen = Shared.startFEN;
             fen = fen.split(" ")[0].split("/").join("");
             let squareIndex = 0;
             for (let i = 0; i < fen.length; i++){
@@ -67,20 +56,21 @@ export default class Chessboard{
                     squareIndex += nummericValue;
                 }
                 else{
-                    let key = Shared.getSquareKeyByIndex(squareIndex++, this.isRotated);
+                    let rotatedIndex = this.isRotated ? 63 - squareIndex : squareIndex;
+                    let key = Shared.getSquareKeyByIndex(rotatedIndex, this.isRotated);
                     this.pieceLayer.addPiece(fenChar, key);
+                    squareIndex++;
                 }
             }
         }
     }
-    private appendChild(parent:HTMLElement, tag:string, className:string, text?:string){
-        return parent.appendChild(this.createChild(tag, className, text));
+    addPiece(fenChar:string, squareKey:string){
+        this.pieceLayer.addPiece(fenChar, squareKey);
     }
-    private createChild(tag:string, className:string, text?:string){
-        let child = document.createElement(tag);
-        child.className = className;
-        if (text)
-            child.innerHTML = text;
-        return child;
+    removePiece(squareKey:string){
+        this.pieceLayer.removePiece(squareKey);
+    }
+    showMoveHighlights(from:string, to:string){
+        this.boardLayer.showTargetAndSource(from, to);
     }
 }

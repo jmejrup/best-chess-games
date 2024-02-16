@@ -1,5 +1,5 @@
-import SVGSquare from "../SVGSquare";
-import Shared from "../Shared";
+import SquareFactory from "../chessboard/SquareFactory";
+import Shared from "../chessboard/Shared";
 
 export default class MouseLayer{
     svgRoot:SVGSVGElement;
@@ -23,7 +23,7 @@ export default class MouseLayer{
         });
     }
     createRect(x:number, y:number){
-        return SVGSquare.createRect(x, y);
+        return SquareFactory.createRect(x, y);
     }
     enableHover(squareKey:string, isRotated:boolean){
         let index = Shared.getCurrentIndexOfSquareKey(squareKey, isRotated);

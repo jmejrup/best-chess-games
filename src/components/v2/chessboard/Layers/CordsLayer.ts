@@ -1,12 +1,13 @@
-const horizontalCords = ["A", "B", "C", "D", "E", "F", "G", "H"];
-const verticalCords = ["8", "7", "6", "5", "4", "3", "2", "1"];
+
 
 export default class CordsLayer{
-    group:SVGGElement;
-    horizontalGroup:SVGGElement;
-    verticalGroup:SVGGElement;
+    private group:SVGGElement;
+    private horizontalGroup:SVGGElement;
+    private verticalGroup:SVGGElement;
+    private isRotated:boolean;
 
-    constructor(svgRoot:SVGSVGElement){
+    constructor(svgRoot:SVGSVGElement, isRotated:boolean){
+        this.isRotated = isRotated;
         this.group = document.createElementNS("http://www.w3.org/2000/svg","g");
         this.group.setAttribute("font-family", "Helvetica");
         this.group.setAttribute("font-weight", "bold");
@@ -19,37 +20,42 @@ export default class CordsLayer{
         this.group.appendChild(this.horizontalGroup);
         this.group.appendChild(this.verticalGroup);
 
-        this.horizontalGroup.setAttribute("transform", "translate(0.86, 7.955)");
-        this.verticalGroup.setAttribute("transform", "translate(0.05, 0.18)");
+        this.horizontalGroup.setAttribute("transform", "translate(86, 795.5)");
+        this.verticalGroup.setAttribute("transform", "translate(5, 18)");
 
-        horizontalCords.forEach((letter, index) =>{
+        this.getHorizontalCords(isRotated).forEach((letter, index) =>{
             let group = document.createElementNS("http://www.w3.org/2000/svg","g");
-            group.setAttribute("transform", "translate(" + index.toString() + ",0)");
+            group.setAttribute("transform", "translate(" + (index * 100).toString() + ",0)");
             this.horizontalGroup.appendChild(group);
 
             let text = document.createElementNS("http://www.w3.org/2000/svg","text");
-            text.setAttribute("transform", "scale(0.009)");
+            text.setAttribute("transform", "scale(0.9)");
             text.textContent = letter;
             group.appendChild(text);
         });
-        verticalCords.forEach((number, index) =>{
+        this.getVerticalCords(isRotated).forEach((number, index) =>{
             let group = document.createElementNS("http://www.w3.org/2000/svg","g");
-            group.setAttribute("transform", "translate(0," + + index.toString() + ")");
+            group.setAttribute("transform", "translate(0," + + (index * 100).toString() + ")");
             this.verticalGroup.appendChild(group);
 
             let text = document.createElementNS("http://www.w3.org/2000/svg","text");
             text.textContent = number;
-            text.setAttribute("transform", "scale(0.010)");
+            text.setAttribute("transform", "scale(1)");
             group.appendChild(text);
         });
     }
+    private getHorizontalCords(isRotated:boolean){
+        let horizontalCords = ["A", "B", "C", "D", "E", "F", "G", "H"];
+        return isRotated ? horizontalCords.reverse() : horizontalCords;
+    }
+    private getVerticalCords(isRotated:boolean){
+        let verticalCords = ["8", "7", "6", "5", "4", "3", "2", "1"];
+        return isRotated ? verticalCords.reverse() : verticalCords;
+    }
     rotate(isRotated:boolean){
-        let letters = Array.from(horizontalCords);
-        let numbers = Array.from(verticalCords);
-        if (isRotated){
-            letters.reverse();
-            numbers.reverse();
-        }
+        this.isRotated = isRotated;
+        let letters = this.getHorizontalCords(isRotated);
+        let numbers = this.getVerticalCords(isRotated);
         Array.from(this.horizontalGroup.children).forEach((child, index) =>{
             child.children[0].textContent = letters[index];
         });

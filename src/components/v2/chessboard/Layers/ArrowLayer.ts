@@ -1,22 +1,23 @@
 import Shared from "../Shared";
 
-interface Arrow{
+interface Arrow {
     from:string,
     to:string
 }
 export default class ArrowLayer{
-    svgRoot:SVGSVGElement;
-    group:SVGGElement;
-    strokeWidth = 0.2;
-    rightClickedSquareKey:string|null = null;
-    isRotated = false;
-    currentArrows: Arrow[] = [];
+    private svgRoot:SVGSVGElement;
+    private group:SVGGElement;
+    private strokeWidth = 20;
+    private rightClickedSquareKey:string|null = null;
+    private isRotated = false;
+    private currentArrows: Arrow[] = [];
 
-    constructor(svgRoot:SVGSVGElement){
+    constructor(svgRoot:SVGSVGElement, isRotated:boolean){
+        this.svgRoot = svgRoot;
         let group = document.createElementNS("http://www.w3.org/2000/svg","g");
         svgRoot.appendChild(group);
-        this.svgRoot = svgRoot;
         this.group = group;
+        this.isRotated = isRotated;
     }
     rotate(isRotated:boolean){
         this.isRotated = isRotated;
@@ -25,19 +26,19 @@ export default class ArrowLayer{
             this.drawArrow(arrow.from, arrow.to);
         })
     }
-    onLeftButtonDown(event:MouseEvent){
-        this.group.innerHTML = "";
-        this.currentArrows = [];
-    }
     onRightButtonDown(squareKey:string){
         this.rightClickedSquareKey = squareKey;
+    }
+    onLeftButtonDown(){
+        this.group.innerHTML = "";
+        this.currentArrows = [];
     }
     onRightButtonUp(squareKey:string){
         if (this.rightClickedSquareKey && this.rightClickedSquareKey !== squareKey){
             this.drawArrow(this.rightClickedSquareKey, squareKey);
         }
     }
-    drawArrow(squareKey1:string, squareKey2:string){
+    private drawArrow(squareKey1:string, squareKey2:string){
         this.currentArrows.push({from:squareKey1, to:squareKey2});
         const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
         let point1 = this.svgRoot.createSVGPoint();
@@ -51,9 +52,9 @@ export default class ArrowLayer{
         let from = this.getRelativeCenter(squareKey1);
         let to = this.getRelativeCenter(squareKey2);
         let distance = Math.sqrt(Math.pow(to.x - from.x, 2) + Math.pow(to.y -from.y, 2));
-        let shortenDistance = 0.3;
+        let shortenDistance = 30;
         let center = { x: (from.x + to.x)/2, y: (from.y + to.y)/2 };
-        let triangleSideLength = 0.3;
+        let triangleSideLength = 40;
         let a = triangleSideLength / 2;
         let c = triangleSideLength;
         let heightOfTriangle = Math.sqrt(Math.pow(c, 2) - Math.pow(a,2));
@@ -97,11 +98,11 @@ export default class ArrowLayer{
         polygon.points.appendItem(point7);
         this.group.appendChild(polygon);
     }
-    getRelativeCenter(squareKey:string){
+    private getRelativeCenter(squareKey:string){
         let char = squareKey[0];
         let digit = squareKey[1];
-        let x = Shared.getHorizontalIndex(char, this.isRotated) + 0.5;
-        let y = Shared.getVerticalIndex(digit, this.isRotated) +0.5;
+        let x = Shared.getHorizontalIndex(char, this.isRotated) * 100 + 50;
+        let y = Shared.getVerticalIndex(digit, this.isRotated) * 100 + 50;
         return { x, y };
     }
 }

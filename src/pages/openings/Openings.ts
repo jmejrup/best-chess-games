@@ -2,16 +2,21 @@ import Icons from "../../components/chess/Icons";
 import "./openings.css";
 import { createBackground, setTargetAndSource, getBoundingBoxOfSvgPath } from "./Background";
 import board2 from "./board2.svg";
-import Chessboard from "../../components/svg/Chessboard";
-import GameInfo from "../../components/gameInfo/GameInfo";
+import Chessboard from "../../components/v2/chessboard/Chessboard";
+import GameBrowser from "../../components/v2/gameBrowser/GameBrowswer";
+import Chessgame from "../../components/v2/chessgame/Chessgame";
 
 // let boardContainer = document.getElementById("chessboard") as HTMLElement;
 // let chessboard = new Chessboard(boardContainer, "start", false);
 
 // document.getElementById("test")!.onclick = () => chessboard.test();
+// let f ="r7/3qp1k1/1p1p1pP1/p1nP1P2/PnP5/4B3/4B3/1Q3K2 w - - 1 28";
+//  let fen = "8/kpPK4/8/8/8/8/8/8";
+// let browserContainer = document.getElementById("gameBrowser") as HTMLElement;
+// let gameBrowser = new GameBrowser(browserContainer, fen, false);
 
-let container = document.getElementById("gameInfoContainer") as HTMLElement;
-let gameInfo = new GameInfo(container, "r7/3qp1k1/1p1p1pP1/p1nP1P2/PnP5/4B3/4B3/1Q3K2 w - - 1 28", "White", "Black");;
+let gameContainer = document.getElementById("chessgame") as HTMLElement;
+let chessgame = new Chessgame(gameContainer, "start", true);
 
 
 
