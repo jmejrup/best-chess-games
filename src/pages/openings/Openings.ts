@@ -1,24 +1,40 @@
 import "./openings.css";
 import Chessboard from "../../components/v2/chessboard/Chessboard";
-import GameBrowser from "../../components/v2/gameBrowser/GameBrowswer";
+import GameBrowser from "../../components/v2/gameBrowser/GameBrowser";
 import Chessgame from "../../components/v2/chessgame/Chessgame";
+import { Chess, Move } from "chess.js";
+import * as json from "../../components/chess/assets/data/games.json";
 
 // let boardContainer = document.getElementById("chessboard") as HTMLElement;
 // let chessboard = new Chessboard(boardContainer, "start", false);
 
 // document.getElementById("test")!.onclick = () => chessboard.test();
 // let f ="r7/3qp1k1/1p1p1pP1/p1nP1P2/PnP5/4B3/4B3/1Q3K2 w - - 1 28";
-//  let fen = "8/kpPK4/8/8/8/8/8/8";
-// let browserContainer = document.getElementById("gameBrowser") as HTMLElement;
-// let gameBrowser = new GameBrowser(browserContainer, fen, false);
+let fen = "8/kpPK4/8/8/8/8/8/8";
+let browserContainer = document.getElementById("gameBrowser") as HTMLElement;
+let gameBrowser = new GameBrowser(browserContainer, fen, false);
+let chess = new Chess();
+chess.loadPgn(json.games[0].moveText);
+let moves = chess.history({verbose:true});
+gameBrowser.loadGame({whitePlayer:"White player", blackPlayer:"Black player", moves});
 
+// let gameContainer = document.getElementById("chessgame") as HTMLElement;
+// let chessgame = new Chessgame(gameContainer, "start", false);
 
+let rotate = document.getElementById("rotate") as HTMLButtonElement;
+rotate.onclick = () => {gameBrowser.rotate()};
 
-let gameContainer = document.getElementById("chessgame") as HTMLElement;
-let chessgame = new Chessgame(gameContainer, "start", true);
+let previous = document.getElementById("prev") as HTMLButtonElement;
+previous.onclick = () => {gameBrowser.stepBack()};
 
-let testButton = document.getElementById("rotate") as HTMLButtonElement;
-testButton.onclick = () => {chessgame.rotate()};
+let next = document.getElementById("next") as HTMLButtonElement;
+next.onclick = () => {gameBrowser.stepForward()};
+
+let play = document.getElementById("play") as HTMLButtonElement;
+play.onclick = () => {gameBrowser.play()};
+
+let pause = document.getElementById("pause") as HTMLButtonElement;
+pause.onclick = () => {gameBrowser.pause()};
 
 // let img = document.getElementById("my-img") as HTMLImageElement;
 // img.src = board2;

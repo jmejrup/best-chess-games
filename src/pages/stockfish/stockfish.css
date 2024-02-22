@@ -1,0 +1,6 @@
+.group{
+    transition:transform;
+    transition-duration: 3s;
+    transform:translate(87.5%, 0);
+    fill:blue;
+}

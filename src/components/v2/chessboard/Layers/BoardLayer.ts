@@ -77,8 +77,22 @@ export default class BoardLayer{
     }
     highlightSourceAndTarget(from:string, to:string){
         this.clearAllHighlights();
-        this.showTargetOrSource(from, this.sourceHighlight, this.sourceColor);
-        this.showTargetOrSource(to, this.targetHighlight, this.targetColor);
+        this.highlightSource(from);
+        this.highlightTarget(to);
+    }
+    highlightSource(from:string){
+        this.sourceHighlight.squareKey = from;
+        this.sourceHighlight.rect.setAttribute("fill", this.sourceColor);
+        this.setPosition(this.sourceHighlight);
+    }
+    highlightTarget(to:string){
+        this.targetHighlight.squareKey = to;
+        this.targetHighlight.rect.setAttribute("fill", this.targetColor);
+        this.setPosition(this.targetHighlight);
+    }
+    clearSourceAndTargetHighlights(){
+        this.sourceHighlight.rect.setAttribute("fill", "transparent");
+        this.targetHighlight.rect.setAttribute("fill", "transparent");
     }
     private showTargetOrSource(squareKey:string, highlight:Highlight, color:string){
         highlight.squareKey = squareKey;
@@ -86,8 +100,7 @@ export default class BoardLayer{
         this.setPosition(highlight);
     }
     private clearAllHighlights(){
-        this.sourceHighlight.rect.setAttribute("fill", "transparent");
-        this.targetHighlight.rect.setAttribute("fill", "transparent");
+        this.clearSourceAndTargetHighlights();
         this.rightClicks = {};
         this.rightClickGroup.innerHTML = "";
     }

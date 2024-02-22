@@ -4,6 +4,7 @@ import PieceLayer from "./Layers/PieceLayer";
 import ArrowLayer from "./Layers/ArrowLayer";
 import MouseEvents from "./MouseEvents";
 import Shared from "./Shared";
+import Piece from "./Piece";
 
 export default class Chessboard{
     svgRoot:SVGSVGElement;
@@ -14,11 +15,11 @@ export default class Chessboard{
     private mouseEvents:MouseEvents
     private isRotated = false;
 
-    constructor(chessContainer:HTMLElement, fen:string, isRotated:boolean){
+    constructor(boardContainer:HTMLElement, fen:string, isRotated:boolean){
         this.isRotated = isRotated;
         this.svgRoot = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         this.svgRoot.setAttribute('viewBox', '0 0 800 800');
-        chessContainer.appendChild(this.svgRoot);
+        boardContainer.appendChild(this.svgRoot);
 
         this.boardLayer = new BoardLayer(this.svgRoot, isRotated);
         this.cordsLayer = new CordsLayer(this.svgRoot, isRotated);
@@ -60,11 +61,31 @@ export default class Chessboard{
             }
         }
     }
+    getPiece(squareKey:string){
+        return this.pieceLayer.getPiece(squareKey);
+    }
     addPiece(fenChar:string, squareKey:string){
-        this.pieceLayer.addPiece(fenChar, squareKey);
+        return this.pieceLayer.addPiece(fenChar, squareKey);
+    }
+    setPiecePosition(piece:Piece){
+        this.pieceLayer.setPiecePosition(piece);
     }
     removePiece(squareKey:string){
-        this.pieceLayer.removePiece(squareKey);
+        try{
+            this.pieceLayer.removePiece(squareKey);
+        }
+        catch(ex){
+            debugger;
+        }
+    }
+    highlightSource(from:string){
+        this.boardLayer.highlightSource(from);
+    }
+    highlightTarget(to:string){
+        this.boardLayer.highlightTarget(to);
+    }
+    clearSourceAndTargetHighlights(){
+        this.boardLayer.clearSourceAndTargetHighlights();
     }
     highlightSourceAndTarget(from:string, to:string){
         this.boardLayer.highlightSourceAndTarget(from, to);

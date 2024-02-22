@@ -99,7 +99,6 @@ export default class DragAndDrop{
                 }
             }
         }
-        
     }
     onMouseMove(event:MouseEvent){
         if (this.dragPiece && this.sourceSquare) {
@@ -145,6 +144,7 @@ export default class DragAndDrop{
                         this.chess.move({ from: from, to: to });
                         if (captureDef){
                             this.chessboard.removePiece(targetSquare!);
+                            
                         }
                         this.chessboard.addPiece(this.dragPiece.fenChar, targetSquare);
                         this.chessboard.highlightSourceAndTarget(from, to);

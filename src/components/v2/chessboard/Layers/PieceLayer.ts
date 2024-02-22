@@ -16,11 +16,15 @@ export default class PieceLayer{
         this.positions = {};
         this.group.innerHTML = "";
     }
+    getPiece(squareKey:string){
+        return this.positions[squareKey];
+    }
     addPiece(fenChar:string, squareKey:string){
         let g = PieceFactory.get(fenChar);
         this.group.appendChild(g);
         let piece = {element:g, fenChar, squareKey};
         this.setPiecePosition(piece);
+        return piece;
     }
     removePiece(squareKey:string){
         let piece = this.positions[squareKey];
@@ -37,7 +41,7 @@ export default class PieceLayer{
             }
         });
     }
-    private setPiecePosition(piece:Piece){
+    setPiecePosition(piece:Piece){
         let squareKey = piece.squareKey;
         this.positions[squareKey] = piece;
         let cords = Shared.getCordinatesBySquareKey(squareKey, this.isRotated);

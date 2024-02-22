@@ -1,4 +1,4 @@
-import GameBrowser from "../gameBrowser/GameBrowswer";
+import GameBrowser from "../gameBrowser/GameBrowser";
 import DragAndDrop from "./DragAndDrop";
 import MouseLayer from "./MouseLayer";
 

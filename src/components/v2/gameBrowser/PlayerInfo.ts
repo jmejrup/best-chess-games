@@ -1,14 +1,13 @@
 import Chessboard from "../chessboard/Chessboard";
 import { CapturePieceFactory } from "./CapturePieceFactory";
-import "./gameBrowser.css";
+import Game from "./Game";
 
-const pieceValues:Record<string, number> = {["p"]:1,["n"]:3,["b"]:3,["r"]:5,["q"]:9};
+const pieceValues:Record<string, number> = {["p"]:1,["n"]:3,["b"]:3,["r"]:5,["q"]:9,["P"]:-1,["N"]:-3,["B"]:-3,["R"]:-5,["Q"]:-9};
 
-export default class GameBrowser{
-    container:HTMLElement;
-    chessboard:Chessboard;
-
-    private isRotated: boolean;
+export default class PlayerInfo{
+    private container:HTMLElement;
+    private whitePlayer:HTMLElement;
+    private blackPlayer:HTMLElement;
     private whiteCaptures:Record<string, HTMLElement> = {};
     private blackCaptures:Record<string, HTMLElement> = {};
     private score = 0;
@@ -18,15 +17,15 @@ export default class GameBrowser{
     private blackPlayerName:HTMLElement;
 
     constructor(container:HTMLElement, fen:string, isRotated:boolean){
-        this.isRotated = isRotated;
         this.container = container;
-        let blackPlayer = this.addChild(this.container, "div", "player black");
-        let boardContainer = this.addChild(container, "div", "cboard");
-        this.chessboard = new Chessboard(boardContainer, fen, isRotated);
-        let whitePlayer = this.addChild(this.container, "div", "player white");
+        this.blackPlayer = this.addChild(this.container, "div", "player black " + (isRotated ? "below" : "above"));
+        this.whitePlayer = this.addChild(this.container, "div", "player white " + (isRotated ? "above" : "below"));
 
-        let blackCapture = this.addChild(blackPlayer, "div", "captures");
-        let whiteCapture = this.addChild(whitePlayer, "div", "captures");
+        let playerAboveBoard = isRotated ? this.whitePlayer : this.blackPlayer;
+        this.container.insertBefore(playerAboveBoard, this.container.firstChild!);
+
+        let blackCapture = this.addChild(this.blackPlayer, "div", "captures");
+        let whiteCapture = this.addChild(this.whitePlayer, "div", "captures");
 
         let record = [this.whiteCaptures, this.blackCaptures];
         [whiteCapture, blackCapture].forEach((element, index) =>{
@@ -35,25 +34,23 @@ export default class GameBrowser{
                 record[index][type] = child;
             });
         });
-        this.whiteScore = this.addChild(whitePlayer, "span", "score");
-        this.blackScore = this.addChild(blackPlayer, "span", "score");
-        this.whitePlayerName = this.addChild(whitePlayer, "div", "name", "White");
-        this.blackPlayerName = this.addChild(blackPlayer, "div", "name", "Black");
-
+        this.whiteScore = this.addChild(this.whitePlayer, "span", "score");
+        this.blackScore = this.addChild(this.blackPlayer, "span", "score");
+        this.whitePlayerName = this.addChild(this.whitePlayer, "div", "name", "White");
+        this.blackPlayerName = this.addChild(this.blackPlayer, "div", "name", "Black");
         if (fen){
             this.setScoreAndCaputereByFen(fen);
         }
     }
-    rotate(){
-        this.chessboard.rotate();
-    }
-    private addChild(parent:HTMLElement, tag:string, className:string, text?:string){
-        let child = document.createElement(tag);
-        child.className = className;
-        if (text)
-            child.innerHTML = text;
-        parent.appendChild(child);
-        return child;
+    rotate(isRotated:boolean){
+        let playerAboveBoard = isRotated ? this.whitePlayer : this.blackPlayer;
+        let playerBelowBoard = isRotated ? this.blackPlayer : this.whitePlayer;
+        this.container.insertBefore(playerAboveBoard, this.container.firstChild!);
+        this.container.appendChild(playerBelowBoard);
+        playerAboveBoard.classList.remove("below");
+        playerBelowBoard.classList.remove("above");
+        playerAboveBoard.classList.add("above");
+        playerBelowBoard.classList.add("below");
     }
     setScore(score:number){
         this.score = score;
@@ -67,44 +64,39 @@ export default class GameBrowser{
         this.whitePlayerName.innerHTML = white;
     }
     setScoreAndCaputereByFen(fen:string){     
-        // Object.values(this.whiteCaptures).concat(Object.values(this.blackCaptures)).forEach(element =>{
-        //     element.innerHTML = "";
-        // });
-        // this.pieceElements = [];
-        // this.setScore(0);
+        Object.values(this.whiteCaptures).concat(Object.values(this.blackCaptures)).forEach(element =>{
+            element.innerHTML = "";
+        });
+        this.setScore(0);
         if (fen !== "start" && fen !== ""){
             let standing = this.calculateScoreAndCapturesByFen(fen);
             Object.entries(standing.captures).forEach(([fenChar, count]) =>{
                 if (count > 0){
-                    let color = fenChar === fenChar.toUpperCase() ? "b" : "w";
                     for (let i = 0; i < count; i++){
-                        let piece = CapturePieceFactory.get(fenChar);
-                        this.addCapture(color, fenChar.toLowerCase(), piece);
+                        this.addCapture(fenChar);
                     }
                 }
             });
         }
     }
-    addCapture(color:string, captured:string, piece:SVGSVGElement){
-        let span = color === "b" ? this.blackCaptures[captured] : this.whiteCaptures[captured];
+    addCapture(fenChar:string){
+        let piece = CapturePieceFactory.get(fenChar);
+        let fenCharLowerCase = fenChar.toLowerCase();
+        let isBlack = fenChar === fenCharLowerCase;
+        let span = isBlack ? this.whiteCaptures[fenCharLowerCase] : this.blackCaptures[fenCharLowerCase];
         span.appendChild(piece);
-        let pieceValue = pieceValues[captured];
-        let newScore = this.score + (color === "b" ? -1 * pieceValue : pieceValue);
+        let pieceValue = pieceValues[fenChar];
+        let newScore = this.score + pieceValue;
         this.setScore(newScore);
     }
-    undoCapture(color:string, captured:string){
-        let pieceValue = pieceValues[captured];
-        let newScore = this.score + (color === "b" ? pieceValue : pieceValue * -1);
+    removeCapture(fenChar:string){
+        let fenCharLowerCase = fenChar.toLowerCase();
+        let isBlack = fenChar === fenCharLowerCase;
+        let span = isBlack ? this.whiteCaptures[fenCharLowerCase] : this.blackCaptures[fenCharLowerCase];
+        span.removeChild(span.firstChild!);
+        let pieceValue = pieceValues[fenChar];
+        let newScore = this.score - pieceValue;
         this.setScore(newScore);
-        return (color === "b" ? this.blackCaptures[captured].firstChild : this.whiteCaptures[captured].firstChild) as HTMLImageElement;
-    }
-    createPiece(fenChar:string){
-        // let pieceElement = document.createElement("img");
-        // pieceElement.className = "piece";
-        // pieceElement.setAttribute("data-type", fenChar);
-        // pieceElement.src = Icons.PieceUrl[fenChar];
-        // this.pieceElements.push(pieceElement);
-        // return pieceElement;
     }
     calculateScoreAndCapturesByFen(fen:string){
         // example: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
@@ -150,5 +142,13 @@ export default class GameBrowser{
             }
         }
         return {score, captures}
+    }
+    private addChild(parent:HTMLElement, tag:string, className:string, text?:string){
+        let child = document.createElement(tag);
+        child.className = className;
+        if (text)
+            child.innerHTML = text;
+        parent.appendChild(child);
+        return child;
     }
 }
