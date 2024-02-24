@@ -67,7 +67,8 @@ export default class Chessboard{
     addPiece(fenChar:string, squareKey:string){
         return this.pieceLayer.addPiece(fenChar, squareKey);
     }
-    setPiecePosition(piece:Piece){
+    setPiecePosition(piece:Piece, squareKey:string){
+        piece.squareKey = squareKey;
         this.pieceLayer.setPiecePosition(piece);
     }
     removePiece(squareKey:string){

@@ -1,15 +1,18 @@
-import Chessboard from "../chessboard/Chessboard";
 import Shared from "../chessboard/Shared";
 import Piece from "../chessboard/Piece";
 import Transition from "./Transition";
 
-export default class MoveTransitions{
-    chessboard:Chessboard;
+export default class TransitionLayer{
+    svgRoot:SVGSVGElement;
+    group:SVGGElement;
     isRotated:boolean;
     currentTransition:Transition.Info|undefined;
 
-    constructor(chessboard:Chessboard, isRotated:boolean){
-        this.chessboard = chessboard;
+    constructor(svgRoot:SVGSVGElement, isRotated:boolean){
+        this.svgRoot = svgRoot;
+        let group = document.createElementNS("http://www.w3.org/2000/svg","g");
+        svgRoot.appendChild(group);
+        this.group = group;
         this.isRotated = isRotated;
     }
     rotate(){
@@ -34,8 +37,10 @@ export default class MoveTransitions{
     }
     move(info:Transition.Info, duration:string, onTransitionEnd:Function, onTransitionCancel:Function){
         this.currentTransition = info;
+        this.group.appendChild(info.piece.element);
         this.prepareTransition(info.direction, duration, info.piece, info.from, info.to);
         if (info.castling){
+            this.group.appendChild(info.castling.rook.element);
             this.prepareTransition(info.direction, duration, info.castling.rook, info.castling.from, info.castling.to);
         }
         info.piece.element.ontransitionend = () =>{
@@ -45,6 +50,7 @@ export default class MoveTransitions{
             }
             this.currentTransition = undefined;
             onTransitionEnd();
+            this.group.innerHTML = "";
         }; 
         info.piece.element.ontransitioncancel = () =>{
             this.removeTransition(info.piece);
@@ -53,6 +59,7 @@ export default class MoveTransitions{
             }
             this.currentTransition = undefined;
             onTransitionCancel();
+            this.group.innerHTML = "";
         }; 
     }
     prepareTransition(direction:Transition.Direction, duration:string, piece:Piece, from:string, to:string){

@@ -14,27 +14,45 @@ let fen = "8/kpPK4/8/8/8/8/8/8";
 let browserContainer = document.getElementById("gameBrowser") as HTMLElement;
 let gameBrowser = new GameBrowser(browserContainer, fen, false);
 let chess = new Chess();
-chess.loadPgn(json.games[0].moveText);
+// chess.loadPgn(json.games[0].moveText);
+chess.loadPgn("1. e4 f5 2. exf5 g6 3. fxg6 e5 4. gxh7 d5 hxg8=Q");
 let moves = chess.history({verbose:true});
 gameBrowser.loadGame({whitePlayer:"White player", blackPlayer:"Black player", moves});
+
+// gameBrowser.goToMove(24);
 
 // let gameContainer = document.getElementById("chessgame") as HTMLElement;
 // let chessgame = new Chessgame(gameContainer, "start", false);
 
-let rotate = document.getElementById("rotate") as HTMLButtonElement;
-rotate.onclick = () => {gameBrowser.rotate()};
+let start = document.getElementById("start") as HTMLButtonElement;
+start.onclick = () => {gameBrowser.goToMove(-1)};
+
+let rewind = document.getElementById("rewind") as HTMLButtonElement;
+rewind.onclick = () => {gameBrowser.rewind()};
 
 let previous = document.getElementById("prev") as HTMLButtonElement;
-previous.onclick = () => {gameBrowser.stepBack()};
-
-let next = document.getElementById("next") as HTMLButtonElement;
-next.onclick = () => {gameBrowser.stepForward()};
+previous.onclick = () => {gameBrowser.previous()};
 
 let play = document.getElementById("play") as HTMLButtonElement;
 play.onclick = () => {gameBrowser.play()};
 
 let pause = document.getElementById("pause") as HTMLButtonElement;
 pause.onclick = () => {gameBrowser.pause()};
+
+let next = document.getElementById("next") as HTMLButtonElement;
+next.onclick = () => {gameBrowser.next()};
+
+let forward = document.getElementById("forward") as HTMLButtonElement;
+forward.onclick = () => {gameBrowser.forward()};
+
+let end = document.getElementById("end") as HTMLButtonElement;
+end.onclick = () => {gameBrowser.goToMove(moves.length -1)};
+
+let rotate = document.getElementById("rotate") as HTMLButtonElement;
+rotate.onclick = () => {gameBrowser.rotate()};
+
+// goToMove.onclick = () => {gameBrowser.goToMove(24)};
+
 
 // let img = document.getElementById("my-img") as HTMLImageElement;
 // img.src = board2;

@@ -15,6 +15,7 @@ let autoplay = document.getElementById("autoplay") as HTMLElement;
 let input = document.getElementById("file-upload") as HTMLInputElement;
 
 let pgnGames: PGN.Game[] | undefined = json.games;
+pgnGames = pgnGames.filter(game => game.moveText!.indexOf("=Q") > -1)
 listInMenu(pgnGames);
 
 let iconGoToStart = prepareIcon("go-to-start", Icons.goToStart, ()=>{
