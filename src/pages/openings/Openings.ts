@@ -12,7 +12,7 @@ import * as json from "../../components/chess/assets/data/games.json";
 // let f ="r7/3qp1k1/1p1p1pP1/p1nP1P2/PnP5/4B3/4B3/1Q3K2 w - - 1 28";
 let fen = "8/kpPK4/8/8/8/8/8/8";
 let browserContainer = document.getElementById("gameBrowser") as HTMLElement;
-let gameBrowser = new GameBrowser(browserContainer, fen, false);
+let gameBrowser = new GameBrowser(browserContainer, "", false);
 let chess = new Chess();
 // chess.loadPgn(json.games[0].moveText);
 chess.loadPgn("1. e4 f5 2. exf5 g6 3. fxg6 d5 4. gxh7 Nc6 5. hxg8=Q Rg8 6. Bd3 Be6 7. Nf3 Qd6 8. O-O O-O-O");

@@ -54,6 +54,9 @@ export default class GameBrowser{
         this.moveBack();
     }
     previous(){
+        if (this.state === "forward"){
+            this.state = "pause";
+        }
         this.moveBack();
     }
     play(){
@@ -62,15 +65,11 @@ export default class GameBrowser{
     }
     pause(){
         this.state = "pause";
-        this.transitionLayer.cancelTransition("moveBack");
-        // let piece = this.chessboard.getPiece("a8")!;
-        // this.chessboard.putOnTop(piece);
-        // setTimeout(() =>{
-        //     this.transitionLayer.animateMove(piece.element, "h1");
-        // },1);
-
     }
     next(){
+        if (this.state === "rewind"){
+            this.state = "pause";
+        }
         this.moveForward();
     }
     forward(){
@@ -101,6 +100,10 @@ export default class GameBrowser{
             this.chessboard.setFen(move.after, true);
             this.playerInfo.setScoreAndCaputereByFen(move.after);
             this.chessboard.highlightSourceAndTarget(move.from, move.to);
+            let castling = this.getCastling(move, true);
+            if (castling){
+                this.chessboard.highlightSource(castling.to);
+            }
         }
     }
     private moveForward(){
