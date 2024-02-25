@@ -64,20 +64,22 @@ export default class Chessboard{
     getPiece(squareKey:string){
         return this.pieceLayer.getPiece(squareKey);
     }
+    setPiecePosition(piece:Piece, squareKey:string){
+        piece.squareKey = squareKey;
+        this.pieceLayer.setPosition(piece);
+    }
     addPiece(fenChar:string, squareKey:string){
         return this.pieceLayer.addPiece(fenChar, squareKey);
     }
-    setPiecePosition(piece:Piece, squareKey:string){
-        piece.squareKey = squareKey;
-        this.pieceLayer.setPiecePosition(piece);
-    }
-    removePiece(squareKey:string){
-        try{
-            this.pieceLayer.removePiece(squareKey);
-        }
-        catch(ex){
-            debugger;
-        }
+    // undoPieceRemoval(piece:Piece){
+    //     this.pieceLayer.undoPieceRemoval(piece);
+    // }
+    // putPieceBackWithNewPosition(piece:Piece, squareKey:string){
+    //     piece.squareKey = squareKey;
+    //     this.pieceLayer.undoPieceRemoval(piece);
+    // }
+    removePieceBySquareKey(squareKey:string){
+        return this.pieceLayer.removePieceBySquareKey(squareKey);
     }
     highlightSource(from:string){
         this.boardLayer.highlightSource(from);
@@ -90,5 +92,8 @@ export default class Chessboard{
     }
     highlightSourceAndTarget(from:string, to:string){
         this.boardLayer.highlightSourceAndTarget(from, to);
+    }
+    putOnTop(piece:Piece){
+        this.pieceLayer.putOnTop(piece);
     }
 }

@@ -31,6 +31,10 @@ namespace Shared{
         let y = getVerticalIndex(squareKey[1], isRotated);
         return { x, y };
     }
+    export function setPosition(element:SVGGElement, squareKey:string, isRotated:boolean){
+        let cords = getCordinatesBySquareKey(squareKey, isRotated);
+        element.setAttribute("transform", "translate(" + cords.x * 100 + "," + cords.y * 100 + ")");
+    }
     export function getSquareByCursorPosition(boardSVG:SVGSVGElement, event:MouseEvent, isRotated:boolean){
         let svgParent = boardSVG.parentElement as HTMLElement;
         let boardWidthAndHeight = svgParent.clientWidth;

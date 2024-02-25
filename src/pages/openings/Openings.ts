@@ -15,7 +15,7 @@ let browserContainer = document.getElementById("gameBrowser") as HTMLElement;
 let gameBrowser = new GameBrowser(browserContainer, fen, false);
 let chess = new Chess();
 // chess.loadPgn(json.games[0].moveText);
-chess.loadPgn("1. e4 f5 2. exf5 g6 3. fxg6 e5 4. gxh7 d5 hxg8=Q");
+chess.loadPgn("1. e4 f5 2. exf5 g6 3. fxg6 d5 4. gxh7 Nc6 5. hxg8=Q Rg8 6. Bd3 Be6 7. Nf3 Qd6 8. O-O O-O-O");
 let moves = chess.history({verbose:true});
 gameBrowser.loadGame({whitePlayer:"White player", blackPlayer:"Black player", moves});
 

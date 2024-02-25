@@ -1,6 +1,7 @@
 import { CapturePieceFactory } from "./CapturePieceFactory";
+import { Move } from "chess.js";
 
-const pieceValues:Record<string, number> = {["p"]:1,["n"]:3,["b"]:3,["r"]:5,["q"]:9,["P"]:-1,["N"]:-3,["B"]:-3,["R"]:-5,["Q"]:-9};
+const pieceValues:Record<string, number> = {["p"]:1,["n"]:3,["b"]:3,["r"]:5,["q"]:9,["k"]:0,["P"]:-1,["N"]:-3,["B"]:-3,["R"]:-5,["Q"]:-9,["K"]:0};
 
 export default class PlayerInfo{
     private container:HTMLElement;
@@ -50,12 +51,18 @@ export default class PlayerInfo{
         playerAboveBoard.classList.add("above");
         playerBelowBoard.classList.add("below");
     }
-    setScore(score:number){
-        this.score = score;
-        let whitePrefix = score === 0 ? "" : (score > 0 ? "+" : "-");
-        let blackPrefix = score === 0 ? "" : (score > 0 ? "-" : "+");
-        this.whiteScore.innerHTML = score === 0 ? "" : (whitePrefix + Math.abs(score));
-        this.blackScore.innerHTML = score === 0 ? "" : (blackPrefix + Math.abs(score));
+    addCapture(move:Move){
+        let fenChar = this.getComputedCapture(move);
+        this.addComputedCapture(fenChar);
+        this.setScoreByFen(move.after);
+    }
+    undoCapture(move:Move){
+        let fenChar = this.getComputedCapture(move);
+        let fenCharLowerCase = fenChar.toLowerCase();
+        let isBlack = fenChar === fenCharLowerCase;
+        let span = isBlack ? this.whiteCaptures[fenCharLowerCase] : this.blackCaptures[fenCharLowerCase];
+        span.removeChild(span.firstChild!);
+        this.setScoreByFen(move.before);
     }
     setPlayerNames(black:string, white:string){
         this.blackPlayerName.innerHTML = black;
@@ -65,38 +72,65 @@ export default class PlayerInfo{
         Object.values(this.whiteCaptures).concat(Object.values(this.blackCaptures)).forEach(element =>{
             element.innerHTML = "";
         });
-        this.setScore(0);
-        if (fen !== "start" && fen !== ""){
-            let standing = this.calculateScoreAndCapturesByFen(fen);
-            Object.entries(standing.captures).forEach(([fenChar, count]) =>{
+        if (fen === "start" || fen === ""){
+            this.setScore(0);
+        }
+        else{
+            let captures = this.getCapturesByFen(fen);
+            Object.entries(captures).forEach(([fenChar, count]) =>{
                 if (count > 0){
                     for (let i = 0; i < count; i++){
-                        this.addCapture(fenChar);
+                        this.addComputedCapture(fenChar);
                     }
                 }
             });
+            this.setScoreByFen(fen);
         }
     }
-    addCapture(fenChar:string){
-        let piece = CapturePieceFactory.get(fenChar);
+    private addComputedCapture(fenChar:string){
         let fenCharLowerCase = fenChar.toLowerCase();
+        let piece = CapturePieceFactory.get(fenChar);
         let isBlack = fenChar === fenCharLowerCase;
         let span = isBlack ? this.whiteCaptures[fenCharLowerCase] : this.blackCaptures[fenCharLowerCase];
         span.appendChild(piece);
-        let pieceValue = pieceValues[fenChar];
-        let newScore = this.score + pieceValue;
-        this.setScore(newScore);
     }
-    removeCapture(fenChar:string){
-        let fenCharLowerCase = fenChar.toLowerCase();
-        let isBlack = fenChar === fenCharLowerCase;
-        let span = isBlack ? this.whiteCaptures[fenCharLowerCase] : this.blackCaptures[fenCharLowerCase];
-        span.removeChild(span.firstChild!);
-        let pieceValue = pieceValues[fenChar];
-        let newScore = this.score - pieceValue;
-        this.setScore(newScore);
+    private setScoreByFen(fen:string){
+        fen = fen.split(" ")[0].split("/").join("");
+        let score = 0;
+        for (const char of fen){
+            if (isNaN(parseInt(char))){
+                score -= pieceValues[char];
+            }
+        }
+        this.setScore(score);
     }
-    calculateScoreAndCapturesByFen(fen:string){
+    private setScore(score:number){
+        this.score = score;
+        let whitePrefix = score === 0 ? "" : (score > 0 ? "+" : "-");
+        let blackPrefix = score === 0 ? "" : (score > 0 ? "-" : "+");
+        this.whiteScore.innerHTML = score === 0 ? "" : (whitePrefix + Math.abs(score));
+        this.blackScore.innerHTML = score === 0 ? "" : (blackPrefix + Math.abs(score));
+    }
+    // A promoted pawn will only show as a pawn in the capture panel
+    private getComputedCapture(move:Move){
+        let capture = move.captured!;
+        let fenChar = move.color === "b" ? capture.toUpperCase() : capture;
+        if (capture !== "p"){
+            let count = 0;
+            for (const char of move.after){
+                if (isNaN(parseInt(char))){
+                    if (char === fenChar){
+                        count++;
+                    }
+                }
+            }
+            if (count >= 2 || (capture === "q" && count >= 1) ){
+                fenChar = move.color === "b" ? "P" : "p";
+            }
+        }
+        return fenChar;
+    }
+    private getCapturesByFen(fen:string):Record<string,number>{
         // example: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
         fen = fen.split(" ")[0].split("/").join("");
         // make a record of all types of pieces and set initial count to zero
@@ -110,11 +144,6 @@ export default class PlayerInfo{
                 fenChars[char] += 1;
             }
         };
-        // if the score is positive white is leading
-        let score = fenChars["P"] - fenChars["p"];
-        score += (fenChars["N"] + fenChars["B"] - fenChars["n"] - fenChars["b"]) * 3;
-        score += (fenChars["R"] - fenChars["r"]) * 5;
-        score += (fenChars["Q"] - fenChars["q"]) * 9;
         // we need to return a similar record showing how many pieces have been taken
         let captures: Record<string, number> = {};
         // we started having 2 rooks, knights and bishops. We could have more due to promotion
@@ -124,7 +153,7 @@ export default class PlayerInfo{
         for (const char of ["q", "Q"]){
             captures[char] = fenChars[char] > 0 ? 0 : 1;
         }
-        // Counting taken pawns is difficult due to possible promotion
+        // Counting captures is difficult due to possible promotion
         let black = {pawn:"p", queen: "q", pieces:["r", "n", "b"]};
         let white = {pawn:"P", queen: "Q", pieces:["R", "N", "B"]};
         for (const player of [black, white])
@@ -139,7 +168,7 @@ export default class PlayerInfo{
                 }
             }
         }
-        return {score, captures}
+        return captures;
     }
     private addChild(parent:HTMLElement, tag:string, className:string, text?:string){
         let child = document.createElement(tag);

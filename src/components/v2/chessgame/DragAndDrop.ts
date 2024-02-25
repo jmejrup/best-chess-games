@@ -108,7 +108,7 @@ export default class DragAndDrop{
                 this.dragContainer.style.width = svgParent.clientWidth / 8 + "px";
                 this.dragContainer.style.height = svgParent.clientHeight / 8 +"px";
                 this.dragContainer.appendChild(this.dragPiece.svg);
-                this.chessboard.removePiece(this.sourceSquare!)
+                this.chessboard.removePieceBySquareKey(this.sourceSquare!)
             }
             this.dragContainer.style.left = event.clientX + document.documentElement.scrollLeft + "px";
             this.dragContainer.style.top = event.clientY + document.documentElement.scrollTop + "px";
@@ -143,7 +143,7 @@ export default class DragAndDrop{
                         let captureDef = this.chess.get(targetSquare);
                         this.chess.move({ from: from, to: to });
                         if (captureDef){
-                            this.chessboard.removePiece(targetSquare!);
+                            this.chessboard.removePieceBySquareKey(targetSquare!);
                             
                         }
                         this.chessboard.addPiece(this.dragPiece.fenChar, targetSquare);

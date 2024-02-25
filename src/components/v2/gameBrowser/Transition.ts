@@ -11,7 +11,7 @@ namespace Transition{
         castling:Castling|undefined
     }
     export type Direction = "forward" | "back";
-    export type CancelReason = "moveForward" | "moveBack" | "rotate";
+    export type CancelReason = "moveForward" | "moveBack" | "rotate" | "stop";
 }
 export default Transition;
 

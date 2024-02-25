@@ -2,10 +2,11 @@ import Chessboard from "../chessboard/Chessboard";
 import Shared from "../chessboard/Shared";
 import { Move } from "chess.js";
 import PlayerInfo from "./PlayerInfo";
-import MoveTransitions from "./MoveTransitions";
 import Game from "./Game";
 import Transition from "./Transition";
 import "./gameBrowser.css";
+import TransitionLayer from "./TransitionLayer";
+import PieceFactory from "../chessboard/PieceFactory";
 
 type State = "start" | "rewind" | "previous" | "play" | "pause" | "next" | "forward" | "end";
 
@@ -15,31 +16,31 @@ export default class GameBrowser{
     playerInfo:PlayerInfo;
     moves:Move[] = [];
     currentMoveIndex = 0;
-    moveTransitions:MoveTransitions;
+    transitionLayer:TransitionLayer;
     state:State = "start";
     shortDelayBetweenMoves = 200;
     longDelayBetweenMoves = 1000;
-    shortTransitionDuration = "500ms";
+    shortTransitionDuration = "1000ms";
     longTransitionDuration = "2000ms";
     timeoutId:NodeJS.Timeout|undefined;
 
     constructor(container:HTMLElement, fen:string, isRotated:boolean){
         this.chessboard = new Chessboard(container, fen, isRotated);
         this.playerInfo = new PlayerInfo(container, fen, isRotated);
-        this.moveTransitions = new MoveTransitions(this.chessboard, isRotated);
+        this.transitionLayer = new TransitionLayer(this.chessboard, isRotated);
         this.isRotated = isRotated;
-        setTimeout(() => {
-            this.goToMove(7);
-        }, 10);
+        // setTimeout(() => {
+        //     this.goToMove(7);
+        // }, 10);
     }
     rotate(){
         this.isRotated = !this.isRotated;
         this.chessboard.rotate();
         this.playerInfo.rotate(this.isRotated);
-        if (this.moveTransitions.currentTransition){
-            this.moveTransitions.cancelTransition("rotate");
+        if (this.transitionLayer.currentTransition){
+            this.transitionLayer.cancelTransition("rotate");
         }
-        this.moveTransitions.rotate();
+        this.transitionLayer.rotate();
     }
     loadGame(game:Game){
         this.chessboard.setFen(Shared.startFEN, true);
@@ -53,7 +54,6 @@ export default class GameBrowser{
         this.moveBack();
     }
     previous(){
-        this.state = "pause";
         this.moveBack();
     }
     play(){
@@ -62,9 +62,15 @@ export default class GameBrowser{
     }
     pause(){
         this.state = "pause";
+        this.transitionLayer.cancelTransition("moveBack");
+        // let piece = this.chessboard.getPiece("a8")!;
+        // this.chessboard.putOnTop(piece);
+        // setTimeout(() =>{
+        //     this.transitionLayer.animateMove(piece.element, "h1");
+        // },1);
+
     }
     next(){
-        this.state = "pause";
         this.moveForward();
     }
     forward(){
@@ -72,11 +78,16 @@ export default class GameBrowser{
         this.moveForward();
     }
     goToMove(index:number){
+        clearTimeout(this.timeoutId);
+        if (this.transitionLayer.currentTransition){
+            this.transitionLayer.cancelTransition("stop");
+        }
         this.currentMoveIndex = index;
         if (index === -1){
             this.state = "start";
             let move = this.moves[0];
             this.chessboard.setFen(move.before, true);
+            this.playerInfo.setScoreAndCaputereByFen(move.before);
             this.chessboard.clearSourceAndTargetHighlights();
         }
         else{
@@ -94,15 +105,14 @@ export default class GameBrowser{
     }
     private moveForward(){
         clearTimeout(this.timeoutId);
-        if (this.moveTransitions.currentTransition){
-            this.moveTransitions.cancelTransition("moveForward");
+        if (this.transitionLayer.currentTransition){
+            this.transitionLayer.cancelTransition("moveForward");
         }
         else if (this.currentMoveIndex < this.moves.length -1){
             let move = this.moves[this.currentMoveIndex +1];
             let piece = this.chessboard.getPiece(move.from)!;
-            let castling = this.getCastling(move, true);
-            // this.chessboard.clearSourceAndTargetHighlights();
             this.chessboard.highlightSource(move.from);
+            let castling = this.getCastling(move, true);
             if (castling){
                 this.chessboard.highlightTarget(castling.from);
             }
@@ -115,15 +125,22 @@ export default class GameBrowser{
                 castling
             }
             let duration = this.state === "play" ? this.longTransitionDuration : this.shortTransitionDuration;
-            this.moveTransitions.move(transitionInfo, duration, () =>{
+            this.transitionLayer.move(transitionInfo, duration, () =>{
                 //OnTransitionEnd
                 this.finishMoveForward(transitionInfo, move, false);
             }, () =>{
                 //OnTransitionCancel
-                if (transitionInfo.cancelReason === "moveForward" || transitionInfo.cancelReason === "rotate"){
+                if (transitionInfo.cancelReason === "stop"){
+                    return;
+                }
+                else if (transitionInfo.cancelReason === "moveForward" || transitionInfo.cancelReason === "rotate"){
                     this.finishMoveForward(transitionInfo, move, true);
                 }
-                else if (this.state === "rewind"){
+                else{
+                    // this.chessboard.undoPieceRemoval(transitionInfo.piece);
+                    // if (transitionInfo.castling){
+                    //     this.chessboard.undoPieceRemoval(transitionInfo.castling.rook);
+                    // }
                     this.moveBack();
                 }
             });
@@ -135,15 +152,16 @@ export default class GameBrowser{
             this.chessboard.highlightSource(info.castling.to);
         }
         else if (move.captured){
-            let capturedPiece = this.chessboard.getPiece(move.to)!;
-            this.chessboard.removePiece(move.to);
-            this.playerInfo.addCapture(capturedPiece.fenChar)
+            this.chessboard.removePieceBySquareKey(move.to);
+            this.playerInfo.addCapture(move)
         }
-        this.chessboard.setPiecePosition(info.piece, info.to);
         if (move.promotion){
-            this.chessboard.removePiece(move.to);
             let promotionFenChar = move.color === "b" ? move.promotion : move.promotion.toUpperCase();
+            this.chessboard.removePieceBySquareKey(move.from);
             this.chessboard.addPiece(promotionFenChar, move.to);
+        }
+        else{
+            this.chessboard.setPiecePosition(info.piece, info.to);
         }
         this.chessboard.highlightTarget(move.to);
         this.currentMoveIndex++;
@@ -162,31 +180,27 @@ export default class GameBrowser{
     }
     private moveBack(){
         clearTimeout(this.timeoutId);
-        if (this.moveTransitions.currentTransition){
-            this.moveTransitions.cancelTransition("moveBack");
+        if (this.transitionLayer.currentTransition){
+            this.transitionLayer.cancelTransition("moveBack");
         }
         else if (this.currentMoveIndex === -1){
             this.chessboard.clearSourceAndTargetHighlights();
             this.state = "start";
         }
         else{
-            if (this.state === "play" || this.state === "forward"){
-                this.state = "pause";
-            }
             let move = this.moves[this.currentMoveIndex];
-            let piece = this.chessboard.getPiece(move.to);
+            let piece = this.chessboard.getPiece(move.to)!;
             if (move.promotion){
-                this.chessboard.removePiece(move.to);
+                this.chessboard.removePieceBySquareKey(move.to);
                 let fenChar = move.color === "b" ? move.piece : move.piece.toUpperCase();
-                piece = this.chessboard.addPiece(fenChar, move.to);
+                piece = PieceFactory.get(fenChar);
+                Shared.setPosition(piece.element, move.to, this.isRotated);
             }
             if (move.captured){
-                let captureFenChar = move.color === "w" ? move.captured : move.captured.toUpperCase();
-                this.playerInfo.removeCapture(captureFenChar);
-                this.chessboard.addPiece(captureFenChar, move.to);
+                this.playerInfo.undoCapture(move);
+                let capturedFenChar = move.color === "b" ? move.captured.toUpperCase() : move.captured;
+                this.chessboard.addPiece(capturedFenChar, move.to);
             }
-            
-            // this.chessboard.clearSourceAndTargetHighlights();
             this.chessboard.highlightTarget(move.to);
             
             let castling = this.getCastling(move, false);
@@ -201,27 +215,37 @@ export default class GameBrowser{
                 to:move.to,
                 castling: castling
             }
-            this.moveTransitions.move(transitionInfo, this.shortTransitionDuration, () =>{
+            this.transitionLayer.move(transitionInfo, this.shortTransitionDuration, () =>{
                 //OnTransitionEnd
                 this.finishMoveBack(transitionInfo, false);
             }, () =>{
                 //OnTransitionCancel
+                if (transitionInfo.cancelReason === "stop"){
+                    return;
+                }
                 // If cancelled by click back then finish moving back
-                if (transitionInfo.cancelReason === "moveBack" || transitionInfo.cancelReason === "rotate"){
+                else if (transitionInfo.cancelReason === "moveBack" || transitionInfo.cancelReason === "rotate"){
                     this.finishMoveBack(transitionInfo, true);
                 }
                 // If cancelled by click forward then redo capture and promotion
                 else{
-                    if (move.captured){
-                        let captureFenChar = move.color === "w" ? move.captured : move.captured.toUpperCase();
-                        this.chessboard.removePiece(move.to);
-                        this.playerInfo.addCapture(captureFenChar);
-                        this.chessboard.setPiecePosition(transitionInfo.piece, move.to);
+                    let piece = transitionInfo.piece;
+                    if (move.captured){//recapture
+                        this.chessboard.removePieceBySquareKey(move.to);
+                        this.playerInfo.addCapture(move);
+                        this.chessboard.setPiecePosition(piece, move.to);
                     }
                     if (move.promotion){
-                        this.chessboard.removePiece(move.from);
-                        let fenChar = move.color === "b" ? move.piece : move.piece.toUpperCase();
-                        piece = this.chessboard.addPiece(fenChar, move.to);
+                        let promotionFenChar = move.color === "b" ? move.promotion : move.promotion.toUpperCase();
+                        this.chessboard.removePieceBySquareKey(move.to);
+                        this.chessboard.addPiece(promotionFenChar, move.to);
+                    }
+                    if (!move.captured && !move.promotion){
+                        this.chessboard.setPiecePosition(piece, move.to);
+                    }
+
+                    if (transitionInfo.castling){
+                        this.chessboard.setPiecePosition(transitionInfo.castling.rook, transitionInfo.to);
                     }
                     if (this.state === "play" || this.state === "forward"){
                         this.moveForward();
