@@ -49,12 +49,6 @@ export default class PlayerInfo{
         this.isRotated = !this.isRotated;
         this.containerAbove.appendChild(this.isRotated ? this.whitePlayer : this.blackPlayer);
         this.containerBelow.appendChild(this.isRotated ? this.blackPlayer : this.whitePlayer);
-        let playerAboveBoard = this.isRotated ? this.whitePlayer : this.blackPlayer;
-        let playerBelowBoard = this.isRotated ? this.blackPlayer : this.whitePlayer;
-        playerAboveBoard.classList.remove("below");
-        playerBelowBoard.classList.remove("above");
-        playerAboveBoard.classList.add("above");
-        playerBelowBoard.classList.add("below");
     }
     addCapture(move:Move){
         let fenChar = this.getComputedCapture(move);

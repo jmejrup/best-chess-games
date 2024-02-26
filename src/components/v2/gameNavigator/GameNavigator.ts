@@ -164,6 +164,9 @@ export default class GameNavigator{
         if (isForward){
             this.moveIndex++;
         }
+        if (this.callbacks.onMoveStart){
+            this.callbacks.onMoveStart(this.moveIndex);
+        }
         let move = this.moves[this.moveIndex];
         let piece = this.chessboard.getPiece(isForward ? move.from : move.to)!;
         let castling = this.getCastling(move, isForward);

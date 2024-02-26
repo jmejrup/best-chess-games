@@ -6,7 +6,7 @@
     padding:4px 8px;
     border-radius:4px;
     cursor:pointer;
-    margin-right:2px;
+    margin-right:3px;
 }
 .game-nav-buttons > img:hover{
     outline:2px solid #FC0;

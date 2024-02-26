@@ -1,5 +1,5 @@
 namespace Screenshot{
-    function Download(svgRoot:SVGSVGElement){
+    export function Download(svgRoot:SVGSVGElement){
         let widthAndHeight = 500;
         let canvas = document.createElement("canvas");
         canvas.height = widthAndHeight;

@@ -1,5 +1,6 @@
 import Icons from "./img/Icons";
 import GameNavigator from "./GameNavigator";
+import Screenshots from "../chessboard/Screenshot";
 import "./buttons.css";
 
 export default class Buttons{
@@ -20,6 +21,9 @@ export default class Buttons{
             gameNavigator.goToMove(gameNavigator.moves.length -1) 
         });
         this.addButton("rotate", Icons.rotate, () => gameNavigator.rotate());
+        this.addButton("screenshot", Icons.screenshot, () => {
+            Screenshots.Download(gameNavigator.chessboard.svgRoot);
+        });
     }
     private addButton(id:string, iconUrl:string, fn: () => void){
         let button = document.createElement("img");

@@ -1,22 +1,17 @@
+.above {
+    margin-bottom: -4px;
+}
+.below .player .name{
+    padding-top:1px;
+}
 .player{
     column-count:2;
     height:4vh;
-}
-.player.above{
-    padding-top:4px;
-    margin-bottom: -3px;
-}
-.player.below{
-    margin-top:-1px;
-}
-.player.below .captures{
-    margin-top:-6px;
 }
 .player .name{
     clear:both;
     text-align: right;
     padding-right:4px;
-    line-height:3vh;
 }
 .player .captures{
     float:left;
@@ -36,11 +31,8 @@
     margin-top:0;
     margin-bottom:-11px;
 }
-.player.white .captures span{
-    padding-bottom: 7px;
-}
 .player .captures .p svg:first-child{
-    padding-left:4px;
+    margin-left:-4px;
 }
 .player .captures .p svg{
     margin-left:-8px;

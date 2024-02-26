@@ -7,6 +7,7 @@ import next from "./icons/next.svg";
 import forward from "./icons/forward.svg";
 import end from "./icons/end.svg";
 import rotate from "./icons/rotate.svg";
+import screenshot from "./icons/screenshot.svg";
 
 export default class Icons{
     static start = start;
@@ -18,4 +19,5 @@ export default class Icons{
     static forward = forward;
     static end = end;
     static rotate = rotate;
+    static screenshot = screenshot;
 }

@@ -33,7 +33,7 @@ namespace Shared{
     }
     export function setPosition(element:SVGGElement, squareKey:string, isRotated:boolean){
         let cords = getCordinatesBySquareKey(squareKey, isRotated);
-        element.setAttribute("transform", "translate(" + cords.x * 100 + "," + cords.y * 100 + ")");
+        element.style.transform = `translate(${cords.x * 12.5}%, ${cords.y * 12.5}%)`;
     }
     export function getSquareByCursorPosition(boardSVG:SVGSVGElement, event:MouseEvent, isRotated:boolean){
         let svgParent = boardSVG.parentElement as HTMLElement;

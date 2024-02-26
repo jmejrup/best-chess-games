@@ -5,23 +5,42 @@
         <link rel="shortcut icon" href="">
         <meta name="robots" content="noindex">
     </head>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        .column{
+            float: left;
+            width:50%;
+            padding: 10px;
+            height: 100vh;
+        }
+        .row:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+        #gameNavigator{
+            width:500px;
+            margin:0 20px;
+        }
+        #history{
+            margin-top:30px;
+        }
+        @media screen and (max-width: 900px) {
+            .column {
+                width: 100%;
+            }
+        }
+    </style>
 <body>
-    <!-- <svg viewBox="0 0 800 800"><g><g transform="scale(2.2) translate(0,0)"><path d="m 22.5,9 c -2.21,0 -4,1.79 -4,4 0,0.89 0.29,1.71 0.78,2.38 C 17.33,16.5 16,18.59 16,21 c 0,2.03 0.94,3.84 2.41,5.03 C 15.41,27.09 11,31.58 11,39.5 H 34 C 34,31.58 29.59,27.09 26.59,26.03 28.06,24.84 29,23.03 29,21 29,18.59 27.67,16.5 25.72,15.38 26.21,14.71 26.5,13.89 26.5,13 c 0,-2.21 -1.79,-4 -4,-4 z"></path></g></g></svg> -->
-    <!-- <div style="height:300px;">Test</div> -->
-    <!-- <div>
-        <div id="chessboard"></div>
-    </div> -->
-    <div id="gameNavigator" style="width:500px;float:left;"></div>
-    <div id="history" style="width:500px;margin:23px;float:left"></div>
-    <!-- <div id="chessgame" style="width:400px;"></div>
-    <button id="start">Start</button>
-    <button id="rewind">Rewind</button>
-    <button id="prev">Previous</button>
-    <button id="play">Play</button>
-    <button id="pause">Pause</button>
-    <button id="next">Next</button>
-    <button id="forward">Forward</button>
-    <button id="end">End</button>
-    <button id="rotate">Rotate</button> -->
+    <div class="row">
+        <div class="column" style="background-color:#aaa;">
+            <div id="gameNavigator"></div>
+        </div>
+        <div class="column" style="background-color:#bbb;">
+            <div id="history"></div>
+        </div>
+      </div>
 </body>
 </html>
