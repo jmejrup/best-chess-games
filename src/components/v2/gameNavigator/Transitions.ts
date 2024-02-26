@@ -40,7 +40,8 @@ export class Transitions{
         if (transition.castling){
             this.chessboard.putOnTop(transition.castling.rook);
         }
-        this.triggerReflow();
+        this.makeFirefoxHappy(transition);
+        this.makeChromeHappy();
         this.current = transition;
         transition.piece.element.ontransitionend = () =>{
             this.removeTransition(transition.piece.element);
@@ -55,8 +56,16 @@ export class Transitions{
             this.startTransition(transition.isForward, duration, transition.castling.rook.element, transition.castling.from, transition.castling.to);
         }
     }
-    private triggerReflow() {
-        void(document.documentElement.offsetHeight);
+    private makeFirefoxHappy(transition:TransitionInfo){
+        let cords = Shared.getCordinatesBySquareKey(transition.piece.squareKey!, this.isRotated);
+        transition.piece.element.style.transform = `translate(${cords.x * 12.5}%, ${cords.y * 12.5}%)`;
+        if (transition.castling){
+            let cords = Shared.getCordinatesBySquareKey(transition.castling.rook.squareKey!, this.isRotated);
+            transition.castling.rook.element.style.transform = `translate(${cords.x * 12.5}%, ${cords.y * 12.5}%)`;
+        }
+    }
+    private makeChromeHappy() {
+        void(document.documentElement.offsetHeight);//Trigger reflow
     }
     private startTransition(isForward:boolean, duration:string, element:SVGGElement, from:string, to:string){
         element.style.transform = "";

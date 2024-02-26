@@ -8,6 +8,7 @@ import Castling from "./Castling";
 import { Move } from "chess.js";
 import Game from "./Game";
 import "./gameNavigator.css";
+import { Callbacks } from "./Callbacks";
 
 type State = "start" | "rewind" | "play" | "pause" | "forward" | "end";
 
@@ -16,6 +17,7 @@ export default class GameNavigator{
     isRotated:boolean;
     playerInfo:PlayerInfo;
     transitions:Transitions;
+    callbacks = new Callbacks();
     state:State = "start";
     moves:Move[] = [];
     moveIndex = 0;
@@ -59,6 +61,9 @@ export default class GameNavigator{
         this.moves = game.moves;
         this.moveIndex = -1;
         this.state = "start";
+        if (this.callbacks.onGameLoaded){
+            this.callbacks.onGameLoaded();
+        }
     }
     rewind(){
         this.state = "rewind";
@@ -115,6 +120,9 @@ export default class GameNavigator{
             if (castling){
                 this.chessboard.highlightSource(castling.to);
             }
+        }
+        if (this.callbacks.onGoToMove){
+            this.callbacks.onGoToMove(index);
         }
     }
     private async move(isForward:boolean){
@@ -218,6 +226,9 @@ export default class GameNavigator{
         }
         if (!isForward){
             this.moveIndex--;
+        }
+        if (this.callbacks.onMoveEnd){
+            this.callbacks.onMoveEnd(this.moveIndex, move, isForward);
         }
         if(this.state === "play" || this.state === "forward" || this.state === "rewind"){
             this.timeoutId = setTimeout(()=>{
