@@ -5,6 +5,8 @@ const pieceValues:Record<string, number> = {["p"]:1,["n"]:3,["b"]:3,["r"]:5,["q"
 
 export default class PlayerInfo{
     private container:HTMLElement;
+    private containerAbove:HTMLElement;
+    private containerBelow:HTMLElement;
     private whitePlayer:HTMLElement;
     private blackPlayer:HTMLElement;
     private whiteCaptures:Record<string, HTMLElement> = {};
@@ -18,11 +20,12 @@ export default class PlayerInfo{
     constructor(container:HTMLElement, fen:string, isRotated:boolean){
         this.container = container;
         this.isRotated = isRotated;
-        this.blackPlayer = this.addChild(this.container, "div", "player black " + (isRotated ? "below" : "above"));
-        this.whitePlayer = this.addChild(this.container, "div", "player white " + (isRotated ? "above" : "below"));
+        this.containerAbove = this.addChild(this.container, "div", "above");
+        this.container.insertBefore(this.containerAbove, this.container.firstChild);
+        this.containerBelow = this.addChild(this.container, "div", "below");
 
-        let playerAboveBoard = isRotated ? this.whitePlayer : this.blackPlayer;
-        this.container.insertBefore(playerAboveBoard, this.container.firstChild!);
+        this.blackPlayer = this.addChild(isRotated ? this.containerBelow : this.containerAbove, "div", "player black " + (isRotated ? "below" : "above"));
+        this.whitePlayer = this.addChild(isRotated ? this.containerAbove : this.containerBelow, "div", "player white " + (isRotated ? "above" : "below"));
 
         let blackCapture = this.addChild(this.blackPlayer, "div", "captures");
         let whiteCapture = this.addChild(this.whitePlayer, "div", "captures");
@@ -44,10 +47,10 @@ export default class PlayerInfo{
     }
     rotate(){
         this.isRotated = !this.isRotated;
+        this.containerAbove.appendChild(this.isRotated ? this.whitePlayer : this.blackPlayer);
+        this.containerBelow.appendChild(this.isRotated ? this.blackPlayer : this.whitePlayer);
         let playerAboveBoard = this.isRotated ? this.whitePlayer : this.blackPlayer;
         let playerBelowBoard = this.isRotated ? this.blackPlayer : this.whitePlayer;
-        this.container.insertBefore(playerAboveBoard, this.container.firstChild!);
-        this.container.appendChild(playerBelowBoard);
         playerAboveBoard.classList.remove("below");
         playerBelowBoard.classList.remove("above");
         playerAboveBoard.classList.add("above");

@@ -11,7 +11,7 @@ import "./gameNavigator.css";
 
 type State = "start" | "rewind" | "play" | "pause" | "forward" | "end";
 
-export default class GameBrowser{
+export default class GameNavigator{
     chessboard:Chessboard;
     isRotated:boolean;
     playerInfo:PlayerInfo;
@@ -19,10 +19,10 @@ export default class GameBrowser{
     state:State = "start";
     moves:Move[] = [];
     moveIndex = 0;
-    shortDelayBetweenMoves = 200;
+    shortDelayBetweenMoves = 100;
     longDelayBetweenMoves = 1000;
-    shortTransitionDuration = "500ms";
-    longTransitionDuration = "2000ms";
+    shortTransitionDuration = "300ms";
+    longTransitionDuration = "1000ms";
     timeoutId:NodeJS.Timeout|undefined;
 
     constructor(container:HTMLElement, fen:string, isRotated:boolean){
@@ -177,12 +177,7 @@ export default class GameBrowser{
                 Shared.setPosition(piece.element, move.to, this.isRotated);
             }
             if (move.captured){
-                try{
-                    this.playerInfo.undoCapture(move);
-                }
-                catch(ex){
-                    debugger;
-                }
+                this.playerInfo.undoCapture(move);
                 let capturedFenChar = move.color === "b" ? move.captured.toUpperCase() : move.captured;
                 this.chessboard.addPiece(capturedFenChar, move.to);
             }
