@@ -1,10 +1,6 @@
 import "../master.css";
 import "./stockfish.css";
-import { Chessboard } from "../../components/chess/Chessboard";
-import { GameController } from "../../components/chess/GameController";
+import Chessgame from "../../components/v2/chessgame/Chessgame";
 
-// let svg = document.getElementById("test")!;
-// let rect = svg.childNodes[0] as HTMLElement;
-// rect.style.transitionProperty = "x, y";
-// rect.style.transitionDuration = "1s";
-// rect.style.transform = "translate(700,700)";
+let gameContainer = document.getElementById("chessgame") as HTMLElement;
+let chessgame = new Chessgame(gameContainer, "start", false);

@@ -14,18 +14,18 @@ type State = "start" | "rewind" | "play" | "pause" | "forward" | "end";
 
 export default class GameNavigator{
     chessboard:Chessboard;
-    isRotated:boolean;
-    playerInfo:PlayerInfo;
-    transitions:Transitions;
     callbacks = new Callbacks();
-    state:State = "start";
     moves:Move[] = [];
-    moveIndex = 0;
-    shortDelayBetweenMoves = 100;
-    longDelayBetweenMoves = 1000;
-    shortTransitionDuration = "300ms";
-    longTransitionDuration = "1000ms";
-    timeoutId:NodeJS.Timeout|undefined;
+    private isRotated:boolean;
+    private playerInfo:PlayerInfo;
+    private transitions:Transitions;
+    private state:State = "start";
+    private moveIndex = 0;
+    private shortDelayBetweenMoves = 100;
+    private longDelayBetweenMoves = 1000;
+    private shortTransitionDuration = "300ms";
+    private longTransitionDuration = "1000ms";
+    private timeoutId:NodeJS.Timeout|undefined;
 
     constructor(container:HTMLElement, fen:string, isRotated:boolean){
         this.chessboard = new Chessboard(container, fen, isRotated);
@@ -62,7 +62,7 @@ export default class GameNavigator{
         this.moveIndex = -1;
         this.state = "start";
         if (this.callbacks.onGameLoaded){
-            this.callbacks.onGameLoaded();
+            this.callbacks.onGameLoaded(this.moves);
         }
     }
     rewind(){

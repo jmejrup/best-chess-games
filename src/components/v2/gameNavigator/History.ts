@@ -12,21 +12,18 @@ export default class History{
         this.container = container;
         this.container.classList.add("game-history");
         this.gameNavigator = gameNavigator;
-        this.gameNavigator.callbacks.onGameLoaded = this.onGameLoaded;
+        this.gameNavigator.callbacks.onGameLoaded = (moves:Move[]) => this.onGameLoaded(moves);
         this.gameNavigator.callbacks.onGoToMove = (index:number) => this.onGoToMove(index);
         this.gameNavigator.callbacks.onMoveStart = (index:number) => this.onMoveStart(index);
         this.gameNavigator.callbacks.onMoveEnd = 
             (index:number, move:Move, isForward:boolean)  => this.onMoveEnd(index, move, isForward);
-        if (this.gameNavigator.moves.length > 0){
-            this.onGameLoaded();
-        }
     }
-    private onGameLoaded(){
+    private onGameLoaded(moves:Move[]){
         this.container.innerHTML = "";
         let isNewTurn = true;
         let turnNumber = 1;
         let turnItem:HTMLElement|undefined;
-        this.gameNavigator.moves.forEach((move, index) =>{
+        moves.forEach((move, index) =>{
             if (isNewTurn){
                 turnItem = this.addChild(this.container, "div", "turn");
                 this.addChild(turnItem, "span", "number", (turnNumber++) + ".");
