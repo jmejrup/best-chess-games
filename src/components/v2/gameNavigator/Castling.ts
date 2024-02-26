@@ -1,6 +1,6 @@
 import Piece from "../chessboard/Piece";
 
-export interface Castling{
+export default interface Castling{
     rook:Piece;
     from:string;
     to:string;

@@ -9,14 +9,15 @@ export default class PlayerInfo{
     private blackPlayer:HTMLElement;
     private whiteCaptures:Record<string, HTMLElement> = {};
     private blackCaptures:Record<string, HTMLElement> = {};
-    private score = 0;
     private whiteScore:HTMLElement;
     private blackScore:HTMLElement;
     private whitePlayerName:HTMLElement;
     private blackPlayerName:HTMLElement;
+    private isRotated:boolean;
 
     constructor(container:HTMLElement, fen:string, isRotated:boolean){
         this.container = container;
+        this.isRotated = isRotated;
         this.blackPlayer = this.addChild(this.container, "div", "player black " + (isRotated ? "below" : "above"));
         this.whitePlayer = this.addChild(this.container, "div", "player white " + (isRotated ? "above" : "below"));
 
@@ -41,9 +42,10 @@ export default class PlayerInfo{
             this.setScoreAndCaputereByFen(fen);
         }
     }
-    rotate(isRotated:boolean){
-        let playerAboveBoard = isRotated ? this.whitePlayer : this.blackPlayer;
-        let playerBelowBoard = isRotated ? this.blackPlayer : this.whitePlayer;
+    rotate(){
+        this.isRotated = !this.isRotated;
+        let playerAboveBoard = this.isRotated ? this.whitePlayer : this.blackPlayer;
+        let playerBelowBoard = this.isRotated ? this.blackPlayer : this.whitePlayer;
         this.container.insertBefore(playerAboveBoard, this.container.firstChild!);
         this.container.appendChild(playerBelowBoard);
         playerAboveBoard.classList.remove("below");
@@ -105,7 +107,6 @@ export default class PlayerInfo{
         this.setScore(score);
     }
     private setScore(score:number){
-        this.score = score;
         let whitePrefix = score === 0 ? "" : (score > 0 ? "+" : "-");
         let blackPrefix = score === 0 ? "" : (score > 0 ? "-" : "+");
         this.whiteScore.innerHTML = score === 0 ? "" : (whitePrefix + Math.abs(score));

@@ -1,20 +1,20 @@
-import GameBrowser from "../gameBrowser/GameBrowser";
+import GameNavigator from "../gameNavigator/GameNavigator";
 import DragAndDrop from "./DragAndDrop";
 import MouseLayer from "./MouseLayer";
 
 export default class Chessgame{
     svgRoot:SVGSVGElement;
     isRotated:boolean;
-    gameBrowser:GameBrowser;
+    gameNavigator:GameNavigator;
     mouseLayer:MouseLayer;
     dragAndDrop:DragAndDrop;
 
     constructor(container: HTMLElement, fen:string, isRotated:boolean){
-        this.gameBrowser = new GameBrowser(container, fen, isRotated);
-        this.svgRoot = this.gameBrowser.chessboard.svgRoot;
+        this.gameNavigator = new GameNavigator(container, fen, isRotated);
+        this.svgRoot = this.gameNavigator.chessboard.svgRoot;
         this.isRotated = isRotated;
         this.mouseLayer = new MouseLayer(this.svgRoot);
-        this.dragAndDrop = new DragAndDrop(this.gameBrowser.chessboard, isRotated, this.mouseLayer);
+        this.dragAndDrop = new DragAndDrop(this.gameNavigator.chessboard, isRotated, this.mouseLayer);
         if (fen !== ""){
             this.dragAndDrop.startGame(fen);
         }
@@ -22,6 +22,6 @@ export default class Chessgame{
     rotate(){
         this.isRotated = !this.isRotated;
         this.dragAndDrop.rotate(this.isRotated);
-        this.gameBrowser.rotate();
+        this.gameNavigator.rotate();
     }
 }
