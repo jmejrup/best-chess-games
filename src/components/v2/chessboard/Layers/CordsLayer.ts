@@ -1,3 +1,5 @@
+import SVG from "../SVG";
+
 export default class CordsLayer{
     private group:SVGGElement;
     private horizontalGroup:SVGGElement;
@@ -6,14 +8,14 @@ export default class CordsLayer{
 
     constructor(svgRoot:SVGSVGElement, isRotated:boolean){
         this.isRotated = isRotated;
-        this.group = document.createElementNS("http://www.w3.org/2000/svg","g");
+        this.group = SVG.createGroup();
         this.group.setAttribute("font-family", "Helvetica");
         this.group.setAttribute("font-weight", "bold");
         this.group.setAttribute("fill", "rgb(30,30,30");
         svgRoot.append(this.group);
 
-        this.horizontalGroup = document.createElementNS("http://www.w3.org/2000/svg","g");
-        this.verticalGroup = document.createElementNS("http://www.w3.org/2000/svg","g");
+        this.horizontalGroup = SVG.createGroup();
+        this.verticalGroup = SVG.createGroup();
 
         this.group.appendChild(this.horizontalGroup);
         this.group.appendChild(this.verticalGroup);
@@ -22,23 +24,18 @@ export default class CordsLayer{
         this.verticalGroup.setAttribute("transform", "translate(5, 18)");
 
         this.getHorizontalCords(isRotated).forEach((letter, index) =>{
-            let group = document.createElementNS("http://www.w3.org/2000/svg","g");
+            let group = SVG.createGroup();
             group.setAttribute("transform", "translate(" + (index * 100).toString() + ",0)");
             this.horizontalGroup.appendChild(group);
-
-            let text = document.createElementNS("http://www.w3.org/2000/svg","text");
-            text.setAttribute("transform", "scale(0.9)");
-            text.textContent = letter;
+            let text = SVG.createText(letter, "scale(0.9)");
             group.appendChild(text);
         });
         this.getVerticalCords(isRotated).forEach((number, index) =>{
-            let group = document.createElementNS("http://www.w3.org/2000/svg","g");
+            let group = SVG.createGroup();
             group.setAttribute("transform", "translate(0," + + (index * 100).toString() + ")");
             this.verticalGroup.appendChild(group);
 
-            let text = document.createElementNS("http://www.w3.org/2000/svg","text");
-            text.textContent = number;
-            text.setAttribute("transform", "scale(1)");
+            let text = SVG.createText(number, "scale(1)");
             group.appendChild(text);
         });
     }

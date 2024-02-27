@@ -9,6 +9,7 @@ import end from "./icons/end.svg";
 import rotate from "./icons/rotate.svg";
 import screenshot from "./icons/screenshot.svg";
 
+
 export default class Icons{
     static start = start;
     static rewind = rewind;

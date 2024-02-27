@@ -1,4 +1,5 @@
 import Shared from "../Shared";
+import SVG from "../SVG";
 
 interface Arrow {
     from:string,
@@ -14,7 +15,7 @@ export default class ArrowLayer{
 
     constructor(svgRoot:SVGSVGElement, isRotated:boolean){
         this.svgRoot = svgRoot;
-        let group = document.createElementNS("http://www.w3.org/2000/svg","g");
+        let group = SVG.createGroup();
         svgRoot.appendChild(group);
         this.group = group;
         this.isRotated = isRotated;

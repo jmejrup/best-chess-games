@@ -1,6 +1,7 @@
 import Piece from "../Piece";
 import PieceFactory from "../PieceFactory";
 import Shared from "../Shared";
+import SVG from "../SVG";
 
 export default class PieceLayer{
     private group:SVGGElement;
@@ -8,7 +9,7 @@ export default class PieceLayer{
     private positions:Record<string, Piece|undefined> = {};
 
     constructor(svgRoot:SVGSVGElement, isRotated:boolean){
-        this.group = document.createElementNS("http://www.w3.org/2000/svg","g");
+        this.group = SVG.createGroup();
         svgRoot.appendChild(this.group);
         this.isRotated = isRotated;
     }
@@ -52,5 +53,17 @@ export default class PieceLayer{
     }
     putOnTop(piece:Piece){
         this.group.appendChild(piece.element);
+    }
+    getKings(){
+        let kings:Record<string, Piece> = {};
+        Object.values(this.positions).forEach(piece =>{
+            if (piece && (piece.fenChar === "k" || piece.fenChar === "K")){
+                kings[piece.fenChar] = piece;
+                if (kings["k"] && kings["K"]){
+                    return kings;
+                }
+            }
+        });
+        return kings;
     }
 }

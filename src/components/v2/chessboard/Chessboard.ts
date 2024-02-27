@@ -5,6 +5,7 @@ import ArrowLayer from "./Layers/ArrowLayer";
 import MouseEvents from "./MouseEvents";
 import Shared from "./Shared";
 import Piece from "./Piece";
+import SVG from "./SVG";
 
 export default class Chessboard{
     svgRoot:SVGSVGElement;
@@ -17,8 +18,7 @@ export default class Chessboard{
 
     constructor(boardContainer:HTMLElement, fen:string, isRotated:boolean){
         this.isRotated = isRotated;
-        this.svgRoot = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        this.svgRoot.setAttribute('viewBox', '0 0 800 800');
+        this.svgRoot = SVG.createSVG('0 0 800 800');
         boardContainer.appendChild(this.svgRoot);
 
         this.boardLayer = new BoardLayer(this.svgRoot, isRotated);
@@ -88,5 +88,9 @@ export default class Chessboard{
     }
     putOnTop(piece:Piece){
         this.pieceLayer.putOnTop(piece);
+    }
+    showWinner(color:string){
+        let kings = this.pieceLayer.getKings();
+        
     }
 }

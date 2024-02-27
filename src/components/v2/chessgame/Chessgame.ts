@@ -5,8 +5,7 @@ import DragAndDrop from "./DragAndDrop";
 import MouseLayer from "./MouseLayer";
 import MouseEvents from "./MouseEvents";
 import Shared from "../chessboard/Shared";
-import Piece from "../chessboard/Piece";
-import { Castling, getCastling } from "../gameNavigator/Castling";
+import { getCastling } from "../gameNavigator/Castling";
 import { Chess } from "chess.js";
 
 export default class Chessgame{
