@@ -4,7 +4,7 @@ import PlayerInfo from "./PlayerInfo";
 import {Transitions, TransitionInfo} from "./Transitions";
 import PieceFactory from "../chessboard/PieceFactory";
 import Piece from "../chessboard/Piece";
-import Castling from "./Castling";
+import { Castling, getCastling } from "./Castling";
 import { Move } from "chess.js";
 import Game from "./Game";
 import "./gameNavigator.css";
@@ -28,10 +28,19 @@ export default class GameNavigator{
     private timeoutId:NodeJS.Timeout|undefined;
 
     constructor(container:HTMLElement, fen:string, isRotated:boolean){
-        this.chessboard = new Chessboard(container, fen, isRotated);
+        let boardContainer = document.createElement("div");
+        container.appendChild(boardContainer);
+        this.chessboard = new Chessboard(boardContainer, fen, isRotated);
         this.playerInfo = new PlayerInfo(container, fen, isRotated);
         this.transitions = new Transitions(this.chessboard, isRotated);
         this.isRotated = isRotated;
+    }
+    addMove(move:Move){
+        this.moves.push(move);
+        this.moveIndex = this.moves.length -1;
+        if (this.callbacks.onMoveAdded){
+            this.callbacks.onMoveAdded(move, this.moves.length -1);
+        }
     }
     rotate(){
         this.isRotated = !this.isRotated;
@@ -116,7 +125,7 @@ export default class GameNavigator{
             this.chessboard.setFen(move.after, true);
             this.playerInfo.setScoreAndCaputereByFen(move.after);
             this.chessboard.highlightSourceAndTarget(move.from, move.to);
-            let castling = this.getCastling(move, true);
+            let castling = getCastling(this.chessboard, move, true);
             if (castling){
                 this.chessboard.highlightSource(castling.to);
             }
@@ -169,7 +178,7 @@ export default class GameNavigator{
         }
         let move = this.moves[this.moveIndex];
         let piece = this.chessboard.getPiece(isForward ? move.from : move.to)!;
-        let castling = this.getCastling(move, isForward);
+        let castling = getCastling(this.chessboard, move, isForward);
         if (isForward){
             this.chessboard.highlightSource(move.from);
             if (castling){
@@ -201,7 +210,7 @@ export default class GameNavigator{
             this.finishMove(isForward, piece, move, castling);
         });
     }
-    private finishMove(isForward:boolean, piece:Piece, move:Move, castling:Castling|undefined){
+    finishMove(isForward:boolean, piece:Piece, move:Move, castling:Castling|undefined){
         if (castling){
             this.chessboard.setPiecePosition(castling.rook, isForward ? castling.to : castling.from);
             this.chessboard.setPiecePosition(piece, isForward ? move.to : move.from);
@@ -240,14 +249,5 @@ export default class GameNavigator{
                 }
             }, this.state === "play" ? this.longDelayBetweenMoves : this.shortDelayBetweenMoves);
         }
-    }
-    private getCastling(move:Move, isForward:boolean){
-        if (move.san[0] === "O"){
-            let from = move.color === "w" ? (move.san === "O-O" ? "h1" : "a1") : (move.san === "O-O" ? "h8" : "a8");
-            let to = move.color === "w" ? (move.san === "O-O" ? "f1" : "d1") : (move.san === "O-O" ? "f8": "d8");
-            let rook = this.chessboard.getPiece(isForward ? from : to)!;
-            return {rook, from, to};
-        }
-        return undefined;
     }
 }

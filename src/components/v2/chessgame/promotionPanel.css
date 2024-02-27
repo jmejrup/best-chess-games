@@ -1,0 +1,5 @@
+.promotion:hover{
+    stroke-width:4;
+    stroke:#FC0;;
+    cursor:pointer;
+}

@@ -3,6 +3,7 @@ import Buttons from "../../components/v2/gameNavigator/Buttons";
 import History from "../../components/v2/gameNavigator/History";
 import { Chess } from "chess.js";
 import * as json from "../../components/chess/assets/data/games.json";
+import "../master.css";
 import "./openings.css";
 
 let gameNavigatorContainer = document.getElementById("gameNavigator") as HTMLElement;

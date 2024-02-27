@@ -1,0 +1,7 @@
+svg.drag-box{
+    position: absolute;
+    transform:translate(-50%,-50%);
+    width:0;
+    height:0;
+    cursor: pointer;
+}

@@ -1,5 +1,5 @@
-namespace SVGSquare{
-    export function createRect(x:number, y:number){
+namespace SquareFactory{
+    export function create(x:number, y:number){
         let rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
         rect.setAttribute("x", (x * 100).toString());
         rect.setAttribute("y", (y * 100).toString());
@@ -8,4 +8,4 @@ namespace SVGSquare{
         return rect;
     }
 }
-export default SVGSquare
+export default SquareFactory

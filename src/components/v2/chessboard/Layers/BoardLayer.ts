@@ -1,5 +1,5 @@
-import SVGSquare from "../SquareFactory";
 import Shared from "../Shared";
+import SquareFactory from "../SquareFactory";
 
 interface Highlight{
     squareKey:string,
@@ -37,8 +37,8 @@ export default class BoardLayer{
         this.sourceTargetGroup = document.createElementNS("http://www.w3.org/2000/svg","g");
         this.svgRoot.appendChild(this.sourceTargetGroup);
         
-        this.sourceHighlight = {squareKey: "a8", type: "source", rect: SVGSquare.createRect(0,0)};
-        this.targetHighlight = {squareKey: "a7", type: "target", rect: SVGSquare.createRect(1,0)};
+        this.sourceHighlight = {squareKey: "a8", type: "source", rect: SquareFactory.create(0,0)};
+        this.targetHighlight = {squareKey: "a7", type: "target", rect: SquareFactory.create(1,0)};
         this.sourceHighlight.rect.setAttribute("fill", "transparent");
         this.targetHighlight.rect.setAttribute("fill", "transparent");
         this.sourceTargetGroup.appendChild(this.sourceHighlight.rect);
@@ -106,7 +106,7 @@ export default class BoardLayer{
     }
     private createRightClickHighlight(squareKey:string){
         let cords = Shared.getCordinatesBySquareKey(squareKey, this.isRotated);
-        let rect = SVGSquare.createRect(cords.x, cords.y);
+        let rect = SquareFactory.create(cords.x, cords.y);
         rect.setAttribute("fill", this.rightClickColor);
         this.rightClickGroup.appendChild(rect);
         this.rightClicks[squareKey] = {squareKey, type: "RightClick", rect};
@@ -117,7 +117,7 @@ export default class BoardLayer{
         highlight.rect.setAttribute("y", (cord.y * 100).toString());
     }
     private createBoardRect(x:number, y:number, color:string){
-        let rect = SVGSquare.createRect(x, y);
+        let rect = SquareFactory.create(x, y);
         rect.setAttribute("fill", color === "l" ? "rgb(233,237,204)" : "rgb(119,153,84)");
         return rect;
     }

@@ -115,7 +115,8 @@ export default class PlayerInfo{
         let fenChar = move.color === "b" ? capture.toUpperCase() : capture;
         if (capture !== "p"){
             let count = 0;
-            for (const char of move.after){
+            let fen = move.after.split(" ")[0].split("/").join("");
+            for (const char of fen){
                 if (isNaN(parseInt(char))){
                     if (char === fenChar){
                         count++;

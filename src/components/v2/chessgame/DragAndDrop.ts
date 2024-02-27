@@ -1,118 +1,60 @@
-// import MouseLayer from "../chessboard/Layers/MouseLayer";
-import { Chess, Square } from "chess.js";
 import Chessboard from "../chessboard/Chessboard";
 import Shared from "../chessboard/Shared";
-import DragPieceFactory from "./DragPieceFactory";
-import DragPiece from "./DragPiece";
-import MouseLayer from "./MouseLayer";
-import { debug } from "webpack";
+import Piece from "../chessboard/Piece";
+import "./dragAndDrop.css";
 
 export default class DragAndDrop{
     private chessboard:Chessboard;
-    private mouseLayer: MouseLayer;
-    private chess:Chess|null = null;
-    private sourceSquare:Square|null = null;
-    private dragPiece:DragPiece|null = null;
+    private svgRoot:SVGSVGElement;
+    private callbackOnDrop:Function;
+    private sourceSquare:string|null = null;
+    private dragPiece:Piece|undefined;
     private scrollTop = 0;
     private deltaScrollTop = 0;
     private scrollLeft = 0;
     private deltaScrollLeft = 0;
-    private dragContainer = document.createElement("div");
+    private dragBox = document.createElementNS("http://www.w3.org/2000/svg","svg") as SVGSVGElement;
     private isRotated:boolean;
 
-    constructor(chessboard:Chessboard, isRotated:boolean, mouseLayer:MouseLayer){
+    constructor(chessboard:Chessboard, isRotated:boolean, callbackOnDrop:Function){
         this.chessboard = chessboard;
+        this.svgRoot = chessboard.svgRoot;
+        this.callbackOnDrop = callbackOnDrop;
         this.isRotated = isRotated;
-        this.mouseLayer = mouseLayer;
-        this.dragContainer.style.position = "absolute";
-        this.dragContainer.style.transform = "translate(-50%,-50%)";
-        chessboard.svgRoot.parentElement!.prepend(this.dragContainer);
-
-        this.chessboard.svgRoot.addEventListener("mousedown", (event:MouseEvent) => {
-            let isRightClick = event.button && event.button == 2;
-            if (!isRightClick){
-                this.onLeftButtonDown(event);
-            }
-            event.preventDefault();
-        });
-        document.addEventListener("mousemove", (event:MouseEvent) => {
-            this.onMouseMove(event);
-            event.preventDefault();
-        });
-        document.addEventListener("mouseup", (event:MouseEvent) =>{
-            let isRightClick = event.button && event.button == 2;
-            if (!isRightClick){
-                this.onMouseUp(event);
-                event.preventDefault();
-            }
-        });
-        document.addEventListener("scroll", () =>{
-            this.onScroll();
-        });
-    }
-    startGame(fen:string){
-        this.mouseLayer.clear();
-        if (fen === "start"){
-            fen = Shared.startFEN;
-        }
-        if (fen !== ""){
-            this.chess = new Chess(fen);
-            fen = fen.split(" ")[0].split("/").join("");
-            let squareIndex = 0;
-            for (let i = 0; i < fen.length; i++){
-                let fenChar = fen[i];
-                let nummericValue = parseInt(fenChar);
-                if (!isNaN(nummericValue)){
-                    squareIndex += nummericValue;
-                }
-                else{
-                    let rotatedIndex = this.isRotated ? 63 - squareIndex : squareIndex;
-                    let key = Shared.getSquareKeyByIndex(rotatedIndex, this.isRotated);
-                    this.mouseLayer.enableHover(key, this.isRotated);
-                    squareIndex++;
-                }
-            }
-        }
+        this.dragBox.setAttribute('viewBox', '0 0 100 100');
+        this.dragBox.classList.add("drag-box");
+        chessboard.svgRoot.parentElement!.prepend(this.dragBox);
     }
     rotate(isRotated:boolean){
         this.isRotated = isRotated;
     }
     onLeftButtonDown(event:MouseEvent){
-        if (this.chess){ //Only act if game has started
-            // This is the rectangle in our mouselayer that ensures cursor:pointer on hover
-            let rect = event.target as HTMLElement;
-            // We have given the square a data-index attribute so it's a little easier to
-            // determine what square was clicked and update whether it should enable hover or not
-            let squareIndex = parseInt(rect.getAttribute("data-index")!);
-            // We can use the index of the square to find the square key.
-            let square = Shared.getSquareKeyByIndex(squareIndex, this.isRotated) as Square;
-            this.sourceSquare = square;
-            let pieceDef = this.chess.get(square);
-            if (pieceDef){
-                let fenChar = pieceDef.color === "b" ? pieceDef.type : pieceDef.type.toUpperCase();
-                this.dragPiece = DragPieceFactory.get(fenChar);
-                if (this.dragPiece){
-                    this.scrollTop = document.documentElement.scrollTop;// Drag position will be incorrect if we don't take scroll into consideration
-                    this.deltaScrollTop = 0; // Used to adjust the drag position if scrolling occurs during the drag
-                    this.scrollLeft = document.documentElement.scrollLeft;
-                    this.deltaScrollLeft = 0;
-                }
-            }
+        // This is the rectangle in our mouselayer that ensures cursor:pointer on hover
+        let rect = event.target as HTMLElement;
+        let squareIndex = parseInt(rect.getAttribute("data-index")!);
+        this.sourceSquare = Shared.getSquareKeyByIndex(squareIndex, this.isRotated);
+        this.dragPiece = this.chessboard.getPiece(this.sourceSquare);
+        if (this.dragPiece){
+            this.dragBox.appendChild(this.dragPiece.element);
+            this.dragBox.style.width = this.svgRoot.clientWidth / 8 + "px";
+            this.dragBox.style.height = this.svgRoot.clientWidth / 8 +"px";
+            this.setDragBoxPosition(event);
+            this.dragPiece.element.style.transform = "translate(0,0)";
+            this.scrollTop = document.documentElement.scrollTop;// Drag position will be incorrect if we don't take scroll into consideration
+            this.deltaScrollTop = 0; // Used to adjust the drag position if scrolling occurs during the drag
+            this.scrollLeft = document.documentElement.scrollLeft;
+            this.deltaScrollLeft = 0;
         }
     }
     onMouseMove(event:MouseEvent){
-        if (this.dragPiece && this.sourceSquare) {
+        if (this.dragPiece) {
             event.preventDefault();
-            if (!this.dragContainer.firstChild){
-                let svgParent = this.chessboard.svgRoot.parentElement as HTMLElement;
-                this.dragContainer.style.width = svgParent.clientWidth / 8 + "px";
-                this.dragContainer.style.height = svgParent.clientHeight / 8 +"px";
-                this.dragContainer.appendChild(this.dragPiece.svg);
-                this.chessboard.removePieceBySquareKey(this.sourceSquare!)
-            }
-            this.dragContainer.style.left = event.clientX + document.documentElement.scrollLeft + "px";
-            this.dragContainer.style.top = event.clientY + document.documentElement.scrollTop + "px";
+            this.setDragBoxPosition(event);
         }
+    }
+    private setDragBoxPosition(event:MouseEvent){
+        this.dragBox.style.left = event.clientX + document.documentElement.scrollLeft + "px";
+        this.dragBox.style.top = event.clientY + document.documentElement.scrollTop + "px";
     }
     onScroll(){
         if (this.dragPiece) {
@@ -122,52 +64,27 @@ export default class DragAndDrop{
             let changeInDeltaY = newDeltaY - this.deltaScrollTop;
             this.deltaScrollLeft = newDeltaX;
             this.deltaScrollTop = newDeltaY;
-            let left = parseFloat(this.dragContainer.style.left);
-            let top = parseFloat(this.dragContainer.style.top);
-            this.dragContainer.style.left = left + changeInDeltaX + "px";
-            this.dragContainer.style.top = top + changeInDeltaY + "px";
+            let left = parseFloat(this.dragBox.style.left);
+            let top = parseFloat(this.dragBox.style.top);
+            this.dragBox.style.left = left + changeInDeltaX + "px";
+            this.dragBox.style.top = top + changeInDeltaY + "px";
         }
     }
     onMouseUp(event:MouseEvent){
-        if (this.chess && this.dragPiece){
-            let svgParent = this.chessboard.svgRoot.parentElement as HTMLElement;
-            if (this.isClickOnElement(event, svgParent)){
-                let targetSquare = Shared.getSquareByCursorPosition(this.chessboard.svgRoot, event, this.isRotated) as Square;
-                if (targetSquare === this.sourceSquare){
-                    this.cancelDrag();
-                }
-                else{
-                    try{
-                        let from = this.sourceSquare as string;
-                        let to = targetSquare as string;
-                        let captureDef = this.chess.get(targetSquare);
-                        this.chess.move({ from: from, to: to });
-                        if (captureDef){
-                            this.chessboard.removePieceBySquareKey(targetSquare!);
-                            
-                        }
-                        this.chessboard.addPiece(this.dragPiece.fenChar, targetSquare);
-                        this.chessboard.highlightSourceAndTarget(from, to);
-                        this.mouseLayer.disableHover(from, this.isRotated);
-                        this.mouseLayer.enableHover(to, this.isRotated);
-                    }
-                    catch(ex){
-                        this.cancelDrag();
-                    }
-                }
+        if (this.dragPiece){
+            let from = this.dragPiece.squareKey!;
+            let fenChar = this.dragPiece.fenChar;
+            this.dragPiece = undefined;
+            this.dragBox.innerHTML = "";
+            this.dragBox.style.width = "0px";
+            this.dragBox.style.height = "0px";
+            if (this.isClickOnElement(event, this.svgRoot.parentElement!)){
+                let to = Shared.getSquareByCursorPosition(this.svgRoot, event, this.isRotated);
+                this.callbackOnDrop(fenChar, from, to);
             }
             else{
-                this.cancelDrag();
+                this.chessboard.addPiece(fenChar, from);
             }
-            this.dragPiece = null;
-            this.dragContainer.innerHTML = "";
-            this.dragContainer.style.width = "0px";
-            this.dragContainer.style.height = "0px";
-        }
-    }
-    cancelDrag(){
-        if (this.dragPiece && this.sourceSquare){
-            this.chessboard.addPiece(this.dragPiece.fenChar, this.sourceSquare);
         }
     }
     isClickOnElement(event: MouseEvent, element:HTMLElement)

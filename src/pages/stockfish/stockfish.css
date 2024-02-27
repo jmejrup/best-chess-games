@@ -1,6 +1,26 @@
-.group{
-    transition:transform;
-    transition-duration: 3s;
-    transform:translate(87.5%, 0);
-    fill:blue;
+* {
+    box-sizing: border-box;
+}
+.column{
+    float: left;
+    width:50%;
+    padding: 10px;
+    height: 100vh;
+}
+.row:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+#chessgame{
+    width:500px;
+    margin:0 20px;
+}
+#history{
+    margin-top:30px;
+}
+@media screen and (max-width: 900px) {
+    .column {
+        width: 100%;
+    }
 }

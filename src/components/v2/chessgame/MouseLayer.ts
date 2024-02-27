@@ -21,7 +21,7 @@ export default class MouseLayer{
         });
     }
     createRect(x:number, y:number){
-        return SquareFactory.createRect(x, y);
+        return SquareFactory.create(x, y);
     }
     enableHover(squareKey:string, isRotated:boolean){
         let index = Shared.getCurrentIndexOfSquareKey(squareKey, isRotated);

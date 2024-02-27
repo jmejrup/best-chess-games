@@ -13,6 +13,7 @@ export default class History{
         this.container.classList.add("game-history");
         this.gameNavigator = gameNavigator;
         this.gameNavigator.callbacks.onGameLoaded = (moves:Move[]) => this.onGameLoaded(moves);
+        this.gameNavigator.callbacks.onMoveAdded = (move:Move, index:number) => this.onMoveAdded(move, index);
         this.gameNavigator.callbacks.onGoToMove = (index:number) => this.onGoToMove(index);
         this.gameNavigator.callbacks.onMoveStart = (index:number) => this.onMoveStart(index);
         this.gameNavigator.callbacks.onMoveEnd = 
@@ -20,20 +21,29 @@ export default class History{
     }
     private onGameLoaded(moves:Move[]){
         this.container.innerHTML = "";
-        let isNewTurn = true;
-        let turnNumber = 1;
-        let turnItem:HTMLElement|undefined;
         moves.forEach((move, index) =>{
-            if (isNewTurn){
-                turnItem = this.addChild(this.container, "div", "turn");
-                this.addChild(turnItem, "span", "number", (turnNumber++) + ".");
-            }
-            let moveText = this.getMoveText(move);
-            let moveItem = this.addChild(turnItem!, "span", "move", moveText);
-            moveItem.onclick = () => this.gameNavigator.goToMove(index);
-            this.moveItems.push(moveItem);
-            isNewTurn = !isNewTurn;
+            this.addToHistory(move, index);
         });
+    }
+    private addToHistory(move:Move, index:number){
+        let isNewTurn = index % 2 === 0;
+        let moveNumber = index +1;
+        let turnNumber = Math.ceil(moveNumber / 2);
+        let turnItem:HTMLElement|null;
+        if (isNewTurn){
+            turnItem = this.addChild(this.container, "div", "turn");
+            this.addChild(turnItem, "span", "number", (turnNumber++) + ".");
+        }
+        else{
+            turnItem = this.moveItems[this.moveItems.length -1].parentElement;
+        }
+        let moveText = this.getMoveText(move);
+        let moveItem = this.addChild(turnItem!, "span", "move", moveText);
+        moveItem.onclick = () => this.gameNavigator.goToMove(index);
+        this.moveItems.push(moveItem);
+    }
+    private onMoveAdded(move:Move, index:number){
+        this.addToHistory(move, index);
     }
     private onGoToMove(index:number){
         for (const moveItem of this.moveItems){

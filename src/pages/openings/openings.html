@@ -5,42 +5,14 @@
         <link rel="shortcut icon" href="">
         <meta name="robots" content="noindex">
     </head>
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-        .column{
-            float: left;
-            width:50%;
-            padding: 10px;
-            height: 100vh;
-        }
-        .row:after {
-            content: "";
-            display: table;
-            clear: both;
-        }
-        #gameNavigator{
-            width:500px;
-            margin:0 20px;
-        }
-        #history{
-            margin-top:30px;
-        }
-        @media screen and (max-width: 900px) {
-            .column {
-                width: 100%;
-            }
-        }
-    </style>
 <body>
     <div class="row">
-        <div class="column" style="background-color:#aaa;">
+        <div class="column">
             <div id="gameNavigator"></div>
         </div>
-        <div class="column" style="background-color:#bbb;">
+        <div class="column">
             <div id="history"></div>
         </div>
-      </div>
+    </div>
 </body>
 </html>

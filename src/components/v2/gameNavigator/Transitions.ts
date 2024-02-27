@@ -1,7 +1,7 @@
 import Chessboard from "../chessboard/Chessboard";
 import Shared from "../chessboard/Shared";
 import Piece from "../chessboard/Piece";
-import Castling from "./Castling";
+import { Castling } from "./Castling";
 import { Move } from "chess.js";
 
 export type TransitionInfo = {
