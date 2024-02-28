@@ -63,8 +63,8 @@ export default class BoardLayer{
             }
         }
     }
-    rotate(isRotated:boolean){
-        this.isRotated = isRotated;
+    rotate(){
+        this.isRotated = !this.isRotated;
         this.setPosition(this.sourceHighlight);
         this.setPosition(this.targetHighlight);
         Object.values(this.rightClicks).forEach(rightClick =>{

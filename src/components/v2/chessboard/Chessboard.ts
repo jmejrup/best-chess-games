@@ -4,8 +4,9 @@ import PieceLayer from "./Layers/PieceLayer";
 import ArrowLayer from "./Layers/ArrowLayer";
 import MouseEvents from "./MouseEvents";
 import Shared from "./Shared";
-import Piece from "./Piece";
 import SVG from "./SVG";
+import ResultsLayer from "./Layers/ResultsLayer";
+import GameResult from "./GameResult";
 
 export default class Chessboard{
     svgRoot:SVGSVGElement;
@@ -13,6 +14,7 @@ export default class Chessboard{
     private boardLayer:BoardLayer;
     private cordsLayer:CordsLayer;
     private arrowLayer:ArrowLayer;
+    private resultsLayer:ResultsLayer;
     private mouseEvents:MouseEvents
     private isRotated = false;
 
@@ -25,17 +27,19 @@ export default class Chessboard{
         this.cordsLayer = new CordsLayer(this.svgRoot, isRotated);
         this.pieceLayer = new PieceLayer(this.svgRoot, isRotated);
         this.arrowLayer = new ArrowLayer(this.svgRoot, isRotated);
+        this.resultsLayer = new ResultsLayer(this.svgRoot, isRotated);
         this.mouseEvents = new MouseEvents(this.svgRoot, this.boardLayer, this.arrowLayer, this.isRotated);
 
         this.setFen(fen, false);
     }
     rotate(){
         this.isRotated = !this.isRotated;
-        this.boardLayer.rotate(this.isRotated);
-        this.cordsLayer.rotate(this.isRotated);
-        this.pieceLayer.rotate(this.isRotated);
-        this.arrowLayer.rotate(this.isRotated);
-        this.mouseEvents.rotate(this.isRotated);
+        this.boardLayer.rotate();
+        this.cordsLayer.rotate();
+        this.pieceLayer.rotate();
+        this.arrowLayer.rotate();
+        this.resultsLayer.rotate();
+        this.mouseEvents.rotate();
     }
     setFen(fen:string, clearFirst:boolean){
         if (clearFirst){
@@ -61,19 +65,6 @@ export default class Chessboard{
             }
         }
     }
-    // getPiece(squareKey:string){
-    //     return this.pieceLayer.getPiece(squareKey);
-    // }
-    // setPiecePosition(piece:Piece, squareKey:string){
-    //     piece.squareKey = squareKey;
-    //     this.pieceLayer.setPosition(piece);
-    // }
-    // addPiece(fenChar:string, squareKey:string){
-    //     return this.pieceLayer.addPiece(fenChar, squareKey);
-    // }
-    // removePieceBySquareKey(squareKey:string){
-    //     return this.pieceLayer.removePieceBySquareKey(squareKey);
-    // }
     highlightSource(from:string){
         this.boardLayer.highlightSource(from);
     }
@@ -86,16 +77,11 @@ export default class Chessboard{
     highlightSourceAndTarget(from:string, to:string){
         this.boardLayer.highlightSourceAndTarget(from, to);
     }
-    // putOnTop(piece:Piece){
-    //     this.pieceLayer.putOnTop(piece);
-    // }
-    showWinner(color:string){
+    showGameResult(gameResult:GameResult){
         let kings = this.pieceLayer.getKings();
+        this.resultsLayer.showGameResult(gameResult, kings);
     }
-    // getPositions(){
-    //     return this.pieceLayer.getPositions();
-    // }
-    // rotateCords(){
-    //     this.cordsLayer.rotate(!this.isRotated);
-    // }
+    hideGameResult(){
+        this.resultsLayer.clear();
+    }
 }

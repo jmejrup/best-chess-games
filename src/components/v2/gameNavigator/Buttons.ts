@@ -20,7 +20,7 @@ export default class Buttons{
         this.addButton("next", Icons.next, () => gameNavigator.next());
         this.addButton("forward", Icons.forward, () => gameNavigator.forward());
         this.addButton("end", Icons.end,  () =>{ 
-            gameNavigator.goToMove(gameNavigator.moves.length -1) 
+            gameNavigator.goToMove(gameNavigator.game.moves.length -1) 
         });
         this.addButton("rotate", Icons.rotate, () => gameNavigator.rotate());
         this.addButton("screenshot", Icons.screenshot, () => {

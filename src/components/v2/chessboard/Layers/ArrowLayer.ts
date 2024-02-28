@@ -20,8 +20,8 @@ export default class ArrowLayer{
         this.group = group;
         this.isRotated = isRotated;
     }
-    rotate(isRotated:boolean){
-        this.isRotated = isRotated;
+    rotate(){
+        this.isRotated = !this.isRotated;
         this.group.innerHTML = "";
         this.currentArrows.forEach(arrow =>{
             this.drawArrow(arrow.from, arrow.to);

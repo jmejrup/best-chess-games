@@ -1,16 +1,15 @@
 import Chessboard from "../chessboard/Chessboard";
+import PieceLayer from "../chessboard/Layers/PieceLayer";
+import PieceElementFactory from "../chessboard/PieceElementFactory";
+import Piece from "../chessboard/Piece";
 import Shared from "../chessboard/Shared";
 import PlayerInfo from "./PlayerInfo";
-import {Transitions, TransitionInfo} from "./Transitions";
-import PieceElementFactory from "../chessboard/PieceElementFactory";
-import PieceFactory from "../chessboard/PieceFactory";
-import Piece from "../chessboard/Piece";
-import { Castling, getCastling } from "./Castling";
-import { Move } from "chess.js";
 import Game from "./Game";
-import "./gameNavigator.css";
+import { Transitions, TransitionInfo } from "./Transitions";
+import { Castling, getCastling } from "./Castling";
+import { Chess, Move } from "chess.js";
 import { Callbacks } from "./Callbacks";
-import PieceLayer from "../chessboard/Layers/PieceLayer";
+import "./gameNavigator.css";
 
 type State = "start" | "rewind" | "play" | "pause" | "forward" | "end";
 
@@ -18,16 +17,17 @@ export default class GameNavigator{
     chessboard:Chessboard;
     boardContainer:HTMLElement;
     callbacks = new Callbacks();
-    moves:Move[] = [];
+    game:Game;
     pieceLayer:PieceLayer;
     private isRotated:boolean;
     private playerInfo:PlayerInfo;
+    private isResultShowing = false;
     private transitions:Transitions;
     private state:State = "start";
     private moveIndex = 0;
     private shortDelayBetweenMoves = 100;
     private longDelayBetweenMoves = 1000;
-    private shortTransitionDuration = "300ms";
+    private shortTransitionDuration = "100ms";
     private longTransitionDuration = "1000ms";
     private timeoutId:NodeJS.Timeout|undefined;
 
@@ -38,21 +38,21 @@ export default class GameNavigator{
         this.transitions = new Transitions(this.chessboard, isRotated);
         this.isRotated = isRotated;
         this.pieceLayer = this.chessboard.pieceLayer;
+        if (fen === "" || fen === "start"){
+            fen = Shared.startFEN;
+        }
+        let moves = new Chess(fen).history({verbose:true});
+        this.game = {blackPlayer: "Black player", whitePlayer: "White player", moves: moves};
     }
     addMove(move:Move){
-        this.moves.push(move);
-        this.moveIndex = this.moves.length -1;
+        this.game.moves.push(move);
+        this.moveIndex = this.game.moves.length -1;
         if (this.callbacks.onMoveAdded){
-            this.callbacks.onMoveAdded(move, this.moves.length -1);
+            this.callbacks.onMoveAdded(move, this.game.moves.length -1);
         }
     }
     rotate(){
         this.isRotated = !this.isRotated;
-        // if (this.isRotated)
-        //     this.boardContainer.classList.add("rotated");
-        // else
-        //     this.boardContainer.classList.remove("rotated");
-        // this.chessboard.rotateCords();
         let stateBefore = this.state;
         this.state = "pause";
         if (stateBefore === "play" || stateBefore === "forward"){
@@ -73,14 +73,15 @@ export default class GameNavigator{
         }
     }
     loadGame(game:Game){
+        this.game = game;
         this.chessboard.setFen(Shared.startFEN, true);
         this.playerInfo.setPlayerNames(game.blackPlayer, game.whitePlayer);
         this.playerInfo.setScoreAndCaputereByFen(Shared.startFEN);
-        this.moves = game.moves;
         this.moveIndex = -1;
         this.state = "start";
+        this.hideGameResult();
         if (this.callbacks.onGameLoaded){
-            this.callbacks.onGameLoaded(this.moves);
+            this.callbacks.onGameLoaded(this.game.moves);
         }
     }
     rewind(){
@@ -111,6 +112,7 @@ export default class GameNavigator{
         this.move(true);
     }
     goToMove(index:number){
+        this.hideGameResult();
         clearTimeout(this.timeoutId);
         if (this.transitions.current){
             this.transitions.cancel();
@@ -118,19 +120,13 @@ export default class GameNavigator{
         this.moveIndex = index;
         if (index === -1){
             this.state = "start";
-            let move = this.moves[0];
+            let move = this.game.moves[0];
             this.chessboard.setFen(move.before, true);
             this.playerInfo.setScoreAndCaputereByFen(move.before);
             this.chessboard.clearSourceAndTargetHighlights();
         }
         else{
-            if (index === this.moves.length -1){
-                this.state = "end";
-            }
-            else{
-                this.state = "pause";
-            }
-            let move = this.moves[index];
+            let move = this.game.moves[index];
             this.chessboard.setFen(move.after, true);
             this.playerInfo.setScoreAndCaputereByFen(move.after);
             this.chessboard.highlightSourceAndTarget(move.from, move.to);
@@ -138,12 +134,20 @@ export default class GameNavigator{
             if (castling){
                 this.chessboard.highlightSource(castling.to);
             }
+            if (index === this.game.moves.length -1){
+                this.state = "end";
+                this.showGameResult();
+            }
+            else{
+                this.state = "pause";
+            }
         }
         if (this.callbacks.onGoToMove){
             this.callbacks.onGoToMove(index);
         }
     }
     private async move(isForward:boolean){
+        this.hideGameResult();
         clearTimeout(this.timeoutId);
         if (this.transitions.current){
             let transition = this.transitions.current;
@@ -176,7 +180,7 @@ export default class GameNavigator{
             }
         }
         else{
-            if (isForward && this.moveIndex === this.moves.length -1){
+            if (isForward && this.moveIndex === this.game.moves.length -1){
                 this.state = "end";
                 return;
             }
@@ -191,7 +195,7 @@ export default class GameNavigator{
             if (this.callbacks.onMoveStart){
                 this.callbacks.onMoveStart(this.moveIndex);
             }
-            let move = this.moves[this.moveIndex];
+            let move = this.game.moves[this.moveIndex];
             let piece = this.pieceLayer.getPiece(isForward ? move.from : move.to)!;
             this.putOnTop(piece);
             let castling = getCastling(this.chessboard, move, isForward);
@@ -276,8 +280,10 @@ export default class GameNavigator{
         if (this.callbacks.onMoveEnd){
             this.callbacks.onMoveEnd(this.moveIndex, move, isForward);
         }
-        this.evalPositions();
-        if(this.state === "play" || this.state === "forward" || this.state === "rewind"){
+        if (this.moveIndex === this.game.moves.length -1){
+            this.showGameResult();
+        }
+        else if(this.state === "play" || this.state === "forward" || this.state === "rewind"){
             this.timeoutId = setTimeout(()=>{
                 if (this.state === "play" || this.state === "forward" || this.state === "rewind"){
                     this.move(isForward);
@@ -285,35 +291,34 @@ export default class GameNavigator{
             }, this.state === "play" ? this.longDelayBetweenMoves : this.shortDelayBetweenMoves);
         }
     }
-    putOnTop(piece:Piece){
+    private showGameResult(){
+        if (this.game.result){
+            this.chessboard.showGameResult(this.game.result);
+            this.isResultShowing = true;
+        }
+    }
+    private hideGameResult(){
+        if (this.isResultShowing){
+            this.isResultShowing = false;
+            this.chessboard.hideGameResult();
+        }
+    }
+    private putOnTop(piece:Piece){
         this.pieceLayer.group.appendChild(piece.element);
     }
-    removeFromPositionRecord(squareKey:string){
+    private removeFromPositionRecord(squareKey:string){
         this.pieceLayer.positions[squareKey] = undefined;
     }
-    removePieceBySquareKey(squareKey:string){
+    private removePieceBySquareKey(squareKey:string){
         let piece = this.pieceLayer.positions[squareKey]!;
         this.pieceLayer.group.removeChild(piece.element);
         this.pieceLayer.positions[squareKey] = undefined;
         return piece;
     }
-    promoteOrUnpromote(piece:Piece, newFenChar:string){
+    private promoteOrUnpromote(piece:Piece, newFenChar:string){
         this.pieceLayer.group.removeChild(piece.element);
         piece.element = PieceElementFactory.get(newFenChar);
         this.pieceLayer.group.appendChild(piece.element);
         piece.fenChar = newFenChar;
-    }
-    evalPositions(){
-        let positions = this.pieceLayer.positions;
-        let array = Object.values(positions);
-        let record:Record<string, Piece> = {};
-        Object.values(positions).forEach(piece =>{
-            if (piece){
-                if (record[piece.squareKey!]){
-                    debugger;
-                }
-                record[piece.squareKey!] = piece;
-            }
-        });
     }
 }

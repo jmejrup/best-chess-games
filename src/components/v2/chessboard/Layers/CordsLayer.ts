@@ -48,10 +48,10 @@ export default class CordsLayer{
         let verticalCords = ["8", "7", "6", "5", "4", "3", "2", "1"];
         return isRotated ? verticalCords.reverse() : verticalCords;
     }
-    rotate(isRotated:boolean){
-        this.isRotated = isRotated;
-        let letters = this.getHorizontalCords(isRotated);
-        let numbers = this.getVerticalCords(isRotated);
+    rotate(){
+        this.isRotated = !this.isRotated;
+        let letters = this.getHorizontalCords(this.isRotated);
+        let numbers = this.getVerticalCords(this.isRotated);
         Array.from(this.horizontalGroup.children).forEach((child, index) =>{
             child.children[0].textContent = letters[index];
         });

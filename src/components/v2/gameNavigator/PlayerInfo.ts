@@ -25,8 +25,8 @@ export default class PlayerInfo{
         this.container.insertBefore(this.containerAbove, this.container.firstChild);
         this.containerBelow = Shared.addChild(this.container, "div", "below");
 
-        this.blackPlayer = Shared.addChild(isRotated ? this.containerBelow : this.containerAbove, "div", "player black " + (isRotated ? "below" : "above"));
-        this.whitePlayer = Shared.addChild(isRotated ? this.containerAbove : this.containerBelow, "div", "player white " + (isRotated ? "above" : "below"));
+        this.blackPlayer = Shared.addChild(isRotated ? this.containerBelow : this.containerAbove, "div", "player black");
+        this.whitePlayer = Shared.addChild(isRotated ? this.containerAbove : this.containerBelow, "div", "player white");
 
         let blackCapture = Shared.addChild(this.blackPlayer, "div", "captures");
         let whiteCapture = Shared.addChild(this.whitePlayer, "div", "captures");

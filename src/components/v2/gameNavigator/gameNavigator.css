@@ -1,27 +1,3 @@
-.board{
-    transition-property: transform;
-    transition-duration: 700ms;
-    transform:rotate(0deg);
-}
-.board.rotated{
-    transform:rotate(180deg);
-}
-.board .piece{
-    transform:rotate(0deg);
-}
-.board.rotated .piece{
-    transform-box: fill-box;
-    transform:rotate(180deg);
-    transform-origin: center;
-}
-.board .cords{
-    transform:rotate(0deg);
-}
-.board.rotated .cords{
-    transform-box: fill-box;
-    transform:rotate(180deg);
-    transform-origin: center;
-}
 .above {
     margin-bottom: -3px;
 }

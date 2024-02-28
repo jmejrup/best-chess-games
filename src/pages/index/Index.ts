@@ -1,9 +1,10 @@
-import { Chess, Move } from "chess.js";
-import { PGN } from "../../components/pgnViewer/PGN";
+import { Chess } from "chess.js";
+import PGN from "../../components/v2/PGN";
 import GameNavigator from "../../components/v2/gameNavigator/GameNavigator";
 import Buttons from "../../components/v2/gameNavigator/Buttons";
 import Game from "../../components/v2/gameNavigator/Game";
-import * as json from "../../components/chess/assets/data/games.json";
+import GameResult from "../../components/v2/chessboard/GameResult";
+import * as json from "../../components/v2/data/games.json";
 import "../master.css";
 import "./index.css";
 
@@ -14,7 +15,6 @@ new Buttons(navContainer, gameNavigator);
 let input = document.getElementById("file-upload") as HTMLInputElement;
 
 let pgnGames: PGN.Game[] | undefined = json.games;
-// pgnGames = pgnGames.filter(game => game.moveText!.indexOf("=Q") > -1);
 listInMenu(pgnGames);
 
 function onMenuItemClick(event:MouseEvent){
@@ -37,7 +37,8 @@ function showGame(menuItem:HTMLElement){
     let moves = chess.history({verbose:true});
     let whitePlayer = pgnGame.tags["White"] || "White";
     let blackPlayer = pgnGame.tags["Black"] || "Black";
-    let game:Game = {moves, whitePlayer, blackPlayer};
+    let result = pgnGame.tags["Result"] as GameResult;
+    let game:Game = {moves, whitePlayer, blackPlayer, result};
     gameNavigator.loadGame(game);
     gameNavigator.play();
 }

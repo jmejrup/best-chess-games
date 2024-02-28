@@ -26,12 +26,8 @@ export default class PieceLayer{
         this.setPosition(piece);
         return piece;
     }
-    // undoPieceRemoval(piece:Piece){
-    //     this.group.appendChild(piece.element);
-    //     this.setPosition(piece);
-    // }
-    rotate(isRotated:boolean){
-        this.isRotated = isRotated;
+    rotate(){
+        this.isRotated = !this.isRotated;
         let pieces = Object.values(this.positions);
         this.positions = {};
         pieces.forEach(piece =>{
@@ -45,9 +41,6 @@ export default class PieceLayer{
         this.positions[squareKey] = piece;
         Shared.setPosition(piece.element, squareKey, this.isRotated);
     }
-    // putOnTop(piece:Piece){
-    //     this.group.appendChild(piece.element);
-    // }
     getKings(){
         let kings:Record<string, Piece> = {};
         Object.values(this.positions).forEach(piece =>{
@@ -59,8 +52,5 @@ export default class PieceLayer{
             }
         });
         return kings;
-    }
-    getPositions(){
-        return this.positions;
     }
 }

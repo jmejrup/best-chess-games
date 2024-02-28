@@ -35,7 +35,7 @@ export default class MouseEvents{
         });
         this.svgRoot.addEventListener("contextmenu", (event) => event.preventDefault() );
     }
-    rotate(isRotated:boolean){
-        this.isRotated = isRotated;
+    rotate(){
+        this.isRotated = !this.isRotated;
     }
 }

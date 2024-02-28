@@ -1,5 +1,5 @@
 import win from "./icons/win.svg";
-import lose from "./icons/loose.svg";
+import lose from "./icons/lose.svg";
 
 export default class Icons{
     static win = win;
