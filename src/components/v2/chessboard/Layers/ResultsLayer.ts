@@ -32,7 +32,15 @@ export default class ResultsLayer{
     showGameResult(gameResult:GameResult, kings:Record<string,Piece>){
         this.gameResult = gameResult;
         this.kings = kings;
-        if (gameResult !== "1/2-1/2"){
+        if (gameResult === "1/2-1/2"){
+            let drawIcon1 = SVG.createImage(Icons.draw, 0, 0, 100, 100);
+            let drawIcon2 = SVG.createImage(Icons.draw, 0, 0, 100, 100);
+            this.group.appendChild(drawIcon1);
+            this.group.appendChild(drawIcon2);
+            this.showImage(drawIcon1, kings["k"].squareKey!);
+            this.showImage(drawIcon2, kings["K"].squareKey!);
+        }
+        else{
             let winnerIcon = SVG.createImage(Icons.win, 0, 0, 30, 30);
             let loserIcon = SVG.createImage(Icons.lose, 0, 0, 40, 40);
             this.group.appendChild(winnerIcon);

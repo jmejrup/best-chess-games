@@ -43,11 +43,11 @@ Animate Move(s) backward: Then:
 Update position record(s)
 Update cord(s)
 
-Cancel forward transition: Do nothing more
+Cancel forward transition: Only update cords
 
 Cancel backward transition:
 if (castling){
-    Do nothing more than cancel transition (maybe update highlights)
+    Update cords (maybe update highlights)
 }
 else{
     if (capture){
