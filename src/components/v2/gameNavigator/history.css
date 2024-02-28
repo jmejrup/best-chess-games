@@ -1,10 +1,10 @@
 .game-history{
-    -webkit-column-width: 100px;
-     -moz-column-width: 100px;
-          column-width: 100px;
+    -webkit-column-width: 130px;
+     -moz-column-width: 130px;
+          column-width: 130px;
 }
 .game-history div{
-    float:left;
+    
 }
 .game-history .move{
     padding:3px;line-height:24px;margin-left:2px;margin-right:3px;border-radius:4px;cursor:pointer;

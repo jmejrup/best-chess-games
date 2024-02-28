@@ -2,6 +2,7 @@ import { Chess } from "chess.js";
 import PGN from "../../components/v2/PGN";
 import GameNavigator from "../../components/v2/gameNavigator/GameNavigator";
 import Buttons from "../../components/v2/gameNavigator/Buttons";
+import History from "../../components/v2/gameNavigator/History";
 import Game from "../../components/v2/gameNavigator/Game";
 import GameResult from "../../components/v2/chessboard/GameResult";
 import * as json from "../../components/v2/data/games.json";
@@ -11,6 +12,9 @@ import "./index.css";
 let navContainer = document.getElementById("game-navigator") as HTMLElement;
 let gameNavigator = new GameNavigator(navContainer, "start", false);
 new Buttons(navContainer, gameNavigator);
+
+// let historyContainer = document.getElementById("history") as HTMLElement;
+// new History(historyContainer, gameNavigator);
 
 let input = document.getElementById("file-upload") as HTMLInputElement;
 
@@ -80,7 +84,7 @@ function listInMenu(games: PGN.Game[]){
         });
     });
     if (menuItems.children){
-        let firstItem = menuItems.children[0] as HTMLElement;
+        let firstItem = menuItems.children[1] as HTMLElement;
         showGame(firstItem);
     }
 }

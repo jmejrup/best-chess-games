@@ -73,6 +73,11 @@ export default class GameNavigator{
         }
     }
     loadGame(game:Game){
+        this.state = "pause";
+        if (this.transitions.current){
+            this.transitions.cancel();
+        }
+        this.chessboard.clearSourceAndTargetHighlights();
         this.game = game;
         this.chessboard.setFen(Shared.startFEN, true);
         this.playerInfo.setPlayerNames(game.blackPlayer, game.whitePlayer);

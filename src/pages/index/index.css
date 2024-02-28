@@ -22,26 +22,9 @@
 .main{margin-left:320px;}
 .main > .left {float:left;width:49%;margin-top:55px;}
 .main > .left > .padding{padding:10px 5%;}
-.main > .right{width:50%;float:left;margin-top:91px;height:200px;}
-.main > .right > #autoplay {
-    margin-bottom: 10px;
-    display:none;
-}
-.main > .right > #autoplay > img{
-    background-color:white;
-    padding:4px 8px;
-    border-radius:4px;
-    cursor:pointer;
-}
-.main > .right > #autoplay > img:hover{
-    outline:2px solid #FC0;
-}
-.main > .right > #autoplay > img.disabled{
-    background-color:grey;
-    outline:none;
-}
-.main > .right > #log{padding:0;line-height:22px;}
-.main > .right > #log > span{cursor:pointer;}
+.main > .right{width:50%;float:left;margin-top:71px;height:200px;}
+.main > .right > #history{padding:10px;line-height:22px;}
+.main > .right > #history > span{cursor:pointer;}
 @media only screen and (max-width: 750px) {
     .main > .board {float:none;width:100%;}
     .main > .right{float:none;width:100%;margin-top:0;}

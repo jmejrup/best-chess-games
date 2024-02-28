@@ -20,6 +20,7 @@ export default class History{
             (index:number, move:Move, isForward:boolean)  => this.onMoveEnd(index, move, isForward);
     }
     private onGameLoaded(moves:Move[]){
+        this.moveItems = [];
         this.container.innerHTML = "";
         moves.forEach((move, index) =>{
             this.addToHistory(move, index);
@@ -32,7 +33,11 @@ export default class History{
         let turnItem:HTMLElement|null;
         if (isNewTurn){
             turnItem = this.addChild(this.container, "div", "turn");
-            this.addChild(turnItem, "span", "number", (turnNumber++) + ".");
+            let turnNumberText = (turnNumber++) + ".";
+            if (turnNumber < 10){
+                turnNumberText = " " + turnNumberText;
+            }
+            this.addChild(turnItem, "span", "number", turnNumberText);
         }
         else{
             turnItem = this.moveItems[this.moveItems.length -1].parentElement;
