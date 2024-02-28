@@ -82,12 +82,12 @@ export default class Chessgame{
         {
             let move = this.chess.move({ from, to, promotion });
             let castling = getCastling(this.chessboard, move, true);
-            let piece = this.chessboard.addPiece(fenChar, from);
+            let piece = this.chessboard.pieceLayer.addPiece(fenChar, from);
             this.gameNavigator.addMove(move);
             this.gameNavigator.finishMove(true, piece, move, castling);
         }
         catch(ex){
-            this.chessboard.addPiece(fenChar, from);
+            this.chessboard.pieceLayer.addPiece(fenChar, from);
         }
     }
     rotate(){

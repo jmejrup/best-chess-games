@@ -1,0 +1,68 @@
+Move
+
+Both directions:
+Put piece on top
+if (castling){
+    put rook on top
+}
+
+Move Forward:
+Update highlights
+Animate move(s): Then:
+if (capture){
+    Delete captured pieces from position record and svg. 
+    Update capture panel and score
+}
+if (promotion){
+    Replace element in svg and update fenChar on piece
+    Update score
+}
+Update position record(s) and remove old position(s) from record
+Update cord(s)
+
+Move back:
+Put piece on top
+if (castling){
+    put rook on top
+}
+else{
+    if capture{
+        Remove current piece from position record
+        Restore captured piece: 
+            Add the captured piece back to svg
+            Update positions record. 
+            Set cords.
+        Update capture panel and score
+    }
+    if (promotion){
+        Undo promotion: Replace element in svg. Set its cords.
+        Update score
+    }
+} 
+Animate Move(s) backward: Then:
+Update position record(s)
+Update cord(s)
+
+Cancel forward transition: Do nothing more
+
+Cancel backward transition:
+if (castling){
+    Do nothing more than cancel transition (maybe update highlights)
+}
+else{
+    if (capture){
+        Remove captured piece from svg
+        Remove it from position record
+        Update capture panel and score
+    }
+    if (promotion){
+        Promote it back again:
+        Delete piece.element from svg.
+        Create new piece.element => (move.promotion)
+        Update fenChar on piece => (move.promotion)
+        Add new piece.element to svg 
+        Update cords => (move.to)
+        Update score
+        // It should not be necessary to update position record
+    }
+}

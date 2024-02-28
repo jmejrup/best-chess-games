@@ -1,8 +1,32 @@
-.above {
-    margin-bottom: -4px;
+.board{
+    transition-property: transform;
+    transition-duration: 700ms;
+    transform:rotate(0deg);
 }
-.below .player .name{
-    padding-top:1px;
+.board.rotated{
+    transform:rotate(180deg);
+}
+.board .piece{
+    transform:rotate(0deg);
+}
+.board.rotated .piece{
+    transform-box: fill-box;
+    transform:rotate(180deg);
+    transform-origin: center;
+}
+.board .cords{
+    transform:rotate(0deg);
+}
+.board.rotated .cords{
+    transform-box: fill-box;
+    transform:rotate(180deg);
+    transform-origin: center;
+}
+.above {
+    margin-bottom: -3px;
+}
+.below{
+    margin-top:-1px;
 }
 .player{
     column-count:2;
@@ -16,6 +40,9 @@
 .player .captures{
     float:left;
     margin-top:-5px;
+}
+.below .player .captures{
+    margin-top:-4px;
 }
 .player .score{
     float:left;

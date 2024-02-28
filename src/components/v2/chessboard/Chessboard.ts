@@ -9,9 +9,9 @@ import SVG from "./SVG";
 
 export default class Chessboard{
     svgRoot:SVGSVGElement;
+    pieceLayer:PieceLayer;
     private boardLayer:BoardLayer;
     private cordsLayer:CordsLayer;
-    private pieceLayer:PieceLayer;
     private arrowLayer:ArrowLayer;
     private mouseEvents:MouseEvents
     private isRotated = false;
@@ -61,19 +61,19 @@ export default class Chessboard{
             }
         }
     }
-    getPiece(squareKey:string){
-        return this.pieceLayer.getPiece(squareKey);
-    }
-    setPiecePosition(piece:Piece, squareKey:string){
-        piece.squareKey = squareKey;
-        this.pieceLayer.setPosition(piece);
-    }
-    addPiece(fenChar:string, squareKey:string){
-        return this.pieceLayer.addPiece(fenChar, squareKey);
-    }
-    removePieceBySquareKey(squareKey:string){
-        return this.pieceLayer.removePieceBySquareKey(squareKey);
-    }
+    // getPiece(squareKey:string){
+    //     return this.pieceLayer.getPiece(squareKey);
+    // }
+    // setPiecePosition(piece:Piece, squareKey:string){
+    //     piece.squareKey = squareKey;
+    //     this.pieceLayer.setPosition(piece);
+    // }
+    // addPiece(fenChar:string, squareKey:string){
+    //     return this.pieceLayer.addPiece(fenChar, squareKey);
+    // }
+    // removePieceBySquareKey(squareKey:string){
+    //     return this.pieceLayer.removePieceBySquareKey(squareKey);
+    // }
     highlightSource(from:string){
         this.boardLayer.highlightSource(from);
     }
@@ -86,11 +86,16 @@ export default class Chessboard{
     highlightSourceAndTarget(from:string, to:string){
         this.boardLayer.highlightSourceAndTarget(from, to);
     }
-    putOnTop(piece:Piece){
-        this.pieceLayer.putOnTop(piece);
-    }
+    // putOnTop(piece:Piece){
+    //     this.pieceLayer.putOnTop(piece);
+    // }
     showWinner(color:string){
         let kings = this.pieceLayer.getKings();
-        
     }
+    // getPositions(){
+    //     return this.pieceLayer.getPositions();
+    // }
+    // rotateCords(){
+    //     this.cordsLayer.rotate(!this.isRotated);
+    // }
 }

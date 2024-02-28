@@ -8,7 +8,7 @@ namespace SVG{
         return document.createElementNS("http://www.w3.org/2000/svg","g");
     }
     export function createSquare(x:number, y:number, fill?:string){
-        return createRect(x * 100, y * 100, 100, 100);
+        return createRect(x * 100, y * 100, 100, 100, fill);
     }
     export function createRect(x:number, y:number, width:number, height:number, fill?:string){
         let rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');

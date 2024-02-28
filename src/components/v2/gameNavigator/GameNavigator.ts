@@ -2,6 +2,7 @@ import Chessboard from "../chessboard/Chessboard";
 import Shared from "../chessboard/Shared";
 import PlayerInfo from "./PlayerInfo";
 import {Transitions, TransitionInfo} from "./Transitions";
+import PieceElementFactory from "../chessboard/PieceElementFactory";
 import PieceFactory from "../chessboard/PieceFactory";
 import Piece from "../chessboard/Piece";
 import { Castling, getCastling } from "./Castling";
@@ -9,13 +10,16 @@ import { Move } from "chess.js";
 import Game from "./Game";
 import "./gameNavigator.css";
 import { Callbacks } from "./Callbacks";
+import PieceLayer from "../chessboard/Layers/PieceLayer";
 
 type State = "start" | "rewind" | "play" | "pause" | "forward" | "end";
 
 export default class GameNavigator{
     chessboard:Chessboard;
+    boardContainer:HTMLElement;
     callbacks = new Callbacks();
     moves:Move[] = [];
+    pieceLayer:PieceLayer;
     private isRotated:boolean;
     private playerInfo:PlayerInfo;
     private transitions:Transitions;
@@ -28,12 +32,12 @@ export default class GameNavigator{
     private timeoutId:NodeJS.Timeout|undefined;
 
     constructor(container:HTMLElement, fen:string, isRotated:boolean){
-        let boardContainer = document.createElement("div");
-        container.appendChild(boardContainer);
-        this.chessboard = new Chessboard(boardContainer, fen, isRotated);
+        this.boardContainer = Shared.addChild(container, "div", "board");
+        this.chessboard = new Chessboard(this.boardContainer, fen, isRotated);
         this.playerInfo = new PlayerInfo(container, fen, isRotated);
         this.transitions = new Transitions(this.chessboard, isRotated);
         this.isRotated = isRotated;
+        this.pieceLayer = this.chessboard.pieceLayer;
     }
     addMove(move:Move){
         this.moves.push(move);
@@ -44,6 +48,11 @@ export default class GameNavigator{
     }
     rotate(){
         this.isRotated = !this.isRotated;
+        // if (this.isRotated)
+        //     this.boardContainer.classList.add("rotated");
+        // else
+        //     this.boardContainer.classList.remove("rotated");
+        // this.chessboard.rotateCords();
         let stateBefore = this.state;
         this.state = "pause";
         if (stateBefore === "play" || stateBefore === "forward"){
@@ -79,7 +88,7 @@ export default class GameNavigator{
         this.move(false);
     }
     previous(){
-        if (this.state === "forward"){
+        if (this.state === "play" || this.state === "forward"){
             this.state = "pause";
         }
         this.move(false);
@@ -147,101 +156,127 @@ export default class GameNavigator{
             }
             else if (isForward){//Moving back was cancelled so recapture and repromote if necessary
                 if (move.captured){//recapture
-                    this.chessboard.removePieceBySquareKey(move.to);
+                    this.removePieceBySquareKey(move.to);
                     this.playerInfo.addCapture(move);
-                    this.chessboard.setPiecePosition(piece, move.to);
+                    this.pieceLayer.setPosition(piece);
                 }
                 if (move.promotion){
                     let promotionFenChar = move.color === "b" ? move.promotion : move.promotion.toUpperCase();
-                    this.chessboard.removePieceBySquareKey(move.to);
-                    this.chessboard.addPiece(promotionFenChar, move.to);
+                    this.promoteOrUnpromote(piece, promotionFenChar);
+                }
+                if (this.state === "play" || this.state === "forward"){
+                    this.move(true);
                 }
             }
             else{//Moving forward was cancelled so undo moveIndex++
                 this.moveIndex--;
-            }
-        }
-        if (isForward && this.moveIndex === this.moves.length -1){
-            this.state = "end";
-            return;
-        }
-        else if (!isForward && this.moveIndex === -1){
-            this.chessboard.clearSourceAndTargetHighlights();
-            this.state = "start";
-            return;
-        }
-        if (isForward){
-            this.moveIndex++;
-        }
-        if (this.callbacks.onMoveStart){
-            this.callbacks.onMoveStart(this.moveIndex);
-        }
-        let move = this.moves[this.moveIndex];
-        let piece = this.chessboard.getPiece(isForward ? move.from : move.to)!;
-        let castling = getCastling(this.chessboard, move, isForward);
-        if (isForward){
-            this.chessboard.highlightSource(move.from);
-            if (castling){
-                this.chessboard.highlightTarget(castling.from);
+                if (this.state === "rewind"){
+                    this.move(false);
+                }
             }
         }
         else{
-            this.chessboard.highlightTarget(move.to);
+            if (isForward && this.moveIndex === this.moves.length -1){
+                this.state = "end";
+                return;
+            }
+            else if (!isForward && this.moveIndex === -1){
+                this.chessboard.clearSourceAndTargetHighlights();
+                this.state = "start";
+                return;
+            }
+            if (isForward){
+                this.moveIndex++;
+            }
+            if (this.callbacks.onMoveStart){
+                this.callbacks.onMoveStart(this.moveIndex);
+            }
+            let move = this.moves[this.moveIndex];
+            let piece = this.pieceLayer.getPiece(isForward ? move.from : move.to)!;
+            this.putOnTop(piece);
+            let castling = getCastling(this.chessboard, move, isForward);
             if (castling){
-                this.chessboard.highlightSource(castling.to);
+                this.putOnTop(castling.rook);
             }
-            if (move.promotion){
-                this.chessboard.removePieceBySquareKey(move.to);
-                let fenChar = move.color === "b" ? move.piece : move.piece.toUpperCase();
-                piece = PieceFactory.get(fenChar);
-                Shared.setPosition(piece.element, move.to, this.isRotated);
+            if (isForward){
+                this.chessboard.highlightSource(move.from);
+                if (castling){
+                    this.chessboard.highlightTarget(castling.from);
+                }
             }
-            if (move.captured){
-                this.playerInfo.undoCapture(move);
-                let capturedFenChar = move.color === "b" ? move.captured.toUpperCase() : move.captured;
-                this.chessboard.addPiece(capturedFenChar, move.to);
+            else{
+                this.chessboard.highlightTarget(move.to);
+                if (castling){
+                    this.chessboard.highlightSource(castling.to);
+                }
+                else{
+                    if (move.captured){
+                        this.removeFromPositionRecord(move.to);//Remove piece from position record before animation so captured piece can be restored
+                        let capturedFenChar = move.color === "b" ? move.captured.toUpperCase() : move.captured;
+                        this.pieceLayer.addPiece(capturedFenChar, move.to);
+                        this.playerInfo.undoCapture(move);
+                    }
+                    if (move.promotion){
+                        let fenChar = move.color === "b" ? move.piece : move.piece.toUpperCase();
+                        this.pieceLayer.group.removeChild(piece.element);
+                        piece.element = PieceElementFactory.get(fenChar);
+                        this.pieceLayer.group.appendChild(piece.element);
+                        Shared.setPosition(piece.element, move.to, this.isRotated);
+                    }
+                }
             }
+            let transitionInfo:TransitionInfo = { isForward, piece, move, castling }
+    
+            let duration = this.state === "play" ? this.longTransitionDuration : this.shortTransitionDuration;
+            await this.transitions.move(transitionInfo, duration, () =>{
+                //OnTransitionEnd
+                this.finishMove(isForward, piece, move, castling);
+            });
         }
-        let transitionInfo:TransitionInfo = { isForward, piece, move, castling }
-
-        let duration = this.state === "play" ? this.longTransitionDuration : this.shortTransitionDuration;
-        await this.transitions.move(transitionInfo, duration, () =>{
-            //OnTransitionEnd
-            this.finishMove(isForward, piece, move, castling);
-        });
     }
     finishMove(isForward:boolean, piece:Piece, move:Move, castling:Castling|undefined){
+        let source = isForward ? move.from : move.to;
+        let target = isForward ? move.to : move.from;
+        piece.squareKey = target;
         if (castling){
-            this.chessboard.setPiecePosition(castling.rook, isForward ? castling.to : castling.from);
-            this.chessboard.setPiecePosition(piece, isForward ? move.to : move.from);
+            castling.rook.squareKey = isForward ? castling.to : castling.from;
+            this.removeFromPositionRecord(source);
+            this.removeFromPositionRecord(isForward ? castling.from : castling.to);
+            this.pieceLayer.setPosition(piece);
+            this.pieceLayer.setPosition(castling.rook);
             this.chessboard.highlightSource(isForward ? castling.to : castling.from);
             this.chessboard.highlightTarget(isForward ? move.to : move.from);
         }
-        else if (isForward){
-            if (move.captured){
-                this.chessboard.removePieceBySquareKey(move.to);
-                this.playerInfo.addCapture(move)
-            }
-            if (move.promotion){
-                let promotionFenChar = move.color === "b" ? move.promotion : move.promotion.toUpperCase();
-                this.chessboard.removePieceBySquareKey(move.from);
-                this.chessboard.addPiece(promotionFenChar, move.to);
-            }
-            else{
-                this.chessboard.setPiecePosition(piece, move.to);
+        else{
+            if (isForward){
+                if (move.captured){
+                    this.removePieceBySquareKey(move.to);
+                    this.playerInfo.addCapture(move)
+                }
+                if (move.promotion){
+                    let promotionFenChar = move.color === "b" ? move.promotion : move.promotion.toUpperCase();
+                    this.promoteOrUnpromote(piece, promotionFenChar);
+                    this.playerInfo.setScoreAndCaputereByFen(move.after);
+                }
+                this.removeFromPositionRecord(move.from);
+                this.pieceLayer.setPosition(piece);
                 this.chessboard.highlightTarget(move.to);
             }
-        }
-        else{
-            this.chessboard.setPiecePosition(piece, move.from);
-            this.chessboard.highlightSource(move.from);
-        }
+            else{//Finish move backward
+                if (!move.captured){
+                    this.removeFromPositionRecord(move.to);
+                }
+                this.pieceLayer.setPosition(piece);
+                this.chessboard.highlightSource(move.from);
+            }
+        } 
         if (!isForward){
             this.moveIndex--;
         }
         if (this.callbacks.onMoveEnd){
             this.callbacks.onMoveEnd(this.moveIndex, move, isForward);
         }
+        this.evalPositions();
         if(this.state === "play" || this.state === "forward" || this.state === "rewind"){
             this.timeoutId = setTimeout(()=>{
                 if (this.state === "play" || this.state === "forward" || this.state === "rewind"){
@@ -249,5 +284,36 @@ export default class GameNavigator{
                 }
             }, this.state === "play" ? this.longDelayBetweenMoves : this.shortDelayBetweenMoves);
         }
+    }
+    putOnTop(piece:Piece){
+        this.pieceLayer.group.appendChild(piece.element);
+    }
+    removeFromPositionRecord(squareKey:string){
+        this.pieceLayer.positions[squareKey] = undefined;
+    }
+    removePieceBySquareKey(squareKey:string){
+        let piece = this.pieceLayer.positions[squareKey]!;
+        this.pieceLayer.group.removeChild(piece.element);
+        this.pieceLayer.positions[squareKey] = undefined;
+        return piece;
+    }
+    promoteOrUnpromote(piece:Piece, newFenChar:string){
+        this.pieceLayer.group.removeChild(piece.element);
+        piece.element = PieceElementFactory.get(newFenChar);
+        this.pieceLayer.group.appendChild(piece.element);
+        piece.fenChar = newFenChar;
+    }
+    evalPositions(){
+        let positions = this.pieceLayer.positions;
+        let array = Object.values(positions);
+        let record:Record<string, Piece> = {};
+        Object.values(positions).forEach(piece =>{
+            if (piece){
+                if (record[piece.squareKey!]){
+                    debugger;
+                }
+                record[piece.squareKey!] = piece;
+            }
+        });
     }
 }

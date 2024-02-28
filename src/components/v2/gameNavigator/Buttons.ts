@@ -2,13 +2,15 @@ import Icons from "./img/Icons";
 import GameNavigator from "./GameNavigator";
 import Screenshots from "../chessboard/Screenshot";
 import "./buttons.css";
+import Shared from "../chessboard/Shared";
 
 export default class Buttons{
     container:HTMLElement;
+    buttonContainer:HTMLElement;
 
     constructor(container:HTMLElement, gameNavigator:GameNavigator){
         this.container = container;
-        this.container.classList.add("game-nav-buttons");
+        this.buttonContainer = Shared.addChild(this.container, "div", "game-nav-buttons");
 
         this.addButton("start", Icons.start, () =>{ gameNavigator.goToMove(-1) });
         this.addButton("rewind", Icons.rewind, () => gameNavigator.rewind());
@@ -29,6 +31,6 @@ export default class Buttons{
         let button = document.createElement("img");
         button.src = iconUrl;
         button.onclick = fn;
-        return this.container.appendChild(button);
+        return this.buttonContainer.appendChild(button);
     }
 }

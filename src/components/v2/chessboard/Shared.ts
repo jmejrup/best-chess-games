@@ -45,5 +45,13 @@ namespace Shared{
         let squareIndexY = Math.floor(boardCoordinateY / squareWidthAndHeight);
         return getSquareKeyByIndexes(squareIndexX, squareIndexY, isRotated);
     }
+    export function addChild(parent:HTMLElement, tag:string, className:string, text?:string){
+        let child = document.createElement(tag);
+        child.className = className;
+        if (text)
+            child.innerHTML = text;
+        parent.appendChild(child);
+        return child;
+    }
 }
 export default Shared;

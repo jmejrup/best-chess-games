@@ -34,9 +34,13 @@ interface Circle{
 const pieceElementTypes:Record<string, SVGGElement> = {};
 ["p","n","b","r","q","k","P","N","B","R","Q","K"].forEach(fenChar =>{
     let g = SVG.createGroup();
+
+    let child = SVG.createGroup();
+    child.classList.add("piece");
+    g.appendChild(child);
     let data = pieceSVGData[fenChar.toLowerCase()];
     let color = fenChar === fenChar.toLowerCase() ? 0 : 1;
-    loadChildren(g, data, color);
+    loadChildren(child, data, color);
     pieceElementTypes[fenChar] = g;
 });
 function loadChildren(g:SVGGElement, group:Group, color:number){
@@ -54,13 +58,13 @@ function loadChildren(g:SVGGElement, group:Group, color:number){
     }
     if (group.path){
         group.path.forEach(path =>{
-            let p = SVG.createPath(path.d);
             if (path.colorIndex === undefined || path.colorIndex === color){
+                let p = SVG.createPath(path.d);
                 if (path.style){
                     p.setAttribute("style", path.style[color]);
                 }
+                g.appendChild(p);
             }
-            g.appendChild(p);
         });
     }
     if (group.g){

@@ -4,9 +4,9 @@ import Shared from "../Shared";
 import SVG from "../SVG";
 
 export default class PieceLayer{
-    private group:SVGGElement;
     private isRotated:boolean;
-    private positions:Record<string, Piece|undefined> = {};
+    group:SVGGElement;
+    positions:Record<string, Piece|undefined> = {};
 
     constructor(svgRoot:SVGSVGElement, isRotated:boolean){
         this.group = SVG.createGroup();
@@ -26,16 +26,10 @@ export default class PieceLayer{
         this.setPosition(piece);
         return piece;
     }
-    undoPieceRemoval(piece:Piece){
-        this.group.appendChild(piece.element);
-        this.setPosition(piece);
-    }
-    removePieceBySquareKey(squareKey:string){
-        let piece = this.positions[squareKey]!;
-        this.group.removeChild(piece.element);
-        this.positions[squareKey] = undefined;
-        return piece;
-    }
+    // undoPieceRemoval(piece:Piece){
+    //     this.group.appendChild(piece.element);
+    //     this.setPosition(piece);
+    // }
     rotate(isRotated:boolean){
         this.isRotated = isRotated;
         let pieces = Object.values(this.positions);
@@ -51,9 +45,9 @@ export default class PieceLayer{
         this.positions[squareKey] = piece;
         Shared.setPosition(piece.element, squareKey, this.isRotated);
     }
-    putOnTop(piece:Piece){
-        this.group.appendChild(piece.element);
-    }
+    // putOnTop(piece:Piece){
+    //     this.group.appendChild(piece.element);
+    // }
     getKings(){
         let kings:Record<string, Piece> = {};
         Object.values(this.positions).forEach(piece =>{
@@ -65,5 +59,8 @@ export default class PieceLayer{
             }
         });
         return kings;
+    }
+    getPositions(){
+        return this.positions;
     }
 }

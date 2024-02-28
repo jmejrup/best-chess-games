@@ -1,64 +1,45 @@
-import { Move } from "chess.js";
-import { Game, GameState } from "../../components/chess/Game";
-import { GameController } from "../../components/chess/GameController";
+import { Chess, Move } from "chess.js";
 import { PGN } from "../../components/pgnViewer/PGN";
-import UTF from "../../components/pgnViewer/UTF";
-import Icons from "../../components/pgnViewer/Icons";
+import GameNavigator from "../../components/v2/gameNavigator/GameNavigator";
+import Buttons from "../../components/v2/gameNavigator/Buttons";
+import Game from "../../components/v2/gameNavigator/Game";
 import * as json from "../../components/chess/assets/data/games.json";
 import "../master.css";
 import "./index.css";
 
-let chessboard = document.getElementById("chess") as HTMLElement;
-let gameController = new GameController(chessboard, "start", "both", true);
-let log = document.getElementById("log") as HTMLElement;
-let autoplay = document.getElementById("autoplay") as HTMLElement;
+let navContainer = document.getElementById("game-navigator") as HTMLElement;
+let gameNavigator = new GameNavigator(navContainer, "start", false);
+new Buttons(navContainer, gameNavigator);
+
 let input = document.getElementById("file-upload") as HTMLInputElement;
 
 let pgnGames: PGN.Game[] | undefined = json.games;
-pgnGames = pgnGames.filter(game => game.moveText!.indexOf("=Q") > -1)
+// pgnGames = pgnGames.filter(game => game.moveText!.indexOf("=Q") > -1);
 listInMenu(pgnGames);
 
-let iconGoToStart = prepareIcon("go-to-start", Icons.goToStart, ()=>{
-    log.innerHTML = "";
-    gameController.goToStart();
-});
-let iconRewind = prepareIcon("rewind", Icons.rewind, gameController.rewind);
-let iconPlay = prepareIcon("play", Icons.play, gameController.play);
-let iconPause = prepareIcon("pause", Icons.pause, gameController.pause);
-let iconForward = prepareIcon("forward", Icons.forward, gameController.forward);
-let iconGoToEnd = prepareIcon("go-to-end", Icons.goToEnd, () =>{
-    if (gameController.currentGame){
-        log.innerHTML = "";
-        let moveNumber = 0;
-        gameController.goToEnd();
-        gameController.currentGame.moves.forEach(move =>{
-            addLogItem(moveNumber++, move);
-        });
-    }
-});
-function prepareIcon(id:string, iconUrl:string, fn: () => void){
-    let icon = document.getElementById(id) as HTMLImageElement;
-    icon.src = iconUrl;
-    icon.onclick = fn;
-    return icon;
-}
 function onMenuItemClick(event:MouseEvent){
+    let menuItem = event.currentTarget as HTMLElement;
+    Array.from(menuItem.parentElement!.children).forEach(item =>{
+        item.classList.remove("active");
+    });
+    menuItem.classList.add("active");
+    showGame(menuItem);
+}
+function showGame(menuItem:HTMLElement){
     if (pgnGames === undefined){
         return;
     }
-    autoplay.style.display = "block";
-    let element = event.currentTarget as HTMLElement;
-    Array.from(element.parentElement!.children).forEach(item =>{
-        item.classList.remove("active");
-    });
-    element.classList.add("active");
-    let index = [...element.parentNode!.children].indexOf(element);
+    menuItem.classList.add("active");
+    let index = [...menuItem.parentNode!.children].indexOf(menuItem);
     let pgnGame = pgnGames[index];
-    let game = new Game(pgnGame.moveText);
-    log.innerHTML = "";
-    let whiteName = pgnGame.tags["White"] || "White";
-    let blackName = pgnGame.tags["Black"] || "Black";
-    gameController.startGame(game, whiteName, blackName);
+    let chess = new Chess();
+    chess.loadPgn(pgnGame.moveText!);
+    let moves = chess.history({verbose:true});
+    let whitePlayer = pgnGame.tags["White"] || "White";
+    let blackPlayer = pgnGame.tags["Black"] || "Black";
+    let game:Game = {moves, whitePlayer, blackPlayer};
+    gameNavigator.loadGame(game);
+    gameNavigator.play();
 }
 input.addEventListener("change", () =>{
     const reader = new FileReader();
@@ -83,12 +64,12 @@ input.addEventListener("change", () =>{
 });
 function listInMenu(games: PGN.Game[]){
     let menu = document.getElementById("menu") as HTMLElement;
-    let items = menu.getElementsByClassName("items")[0];
-    items.innerHTML = "";
+    let menuItems = menu.getElementsByClassName("items")[0];
+    menuItems.innerHTML = "";
     games.forEach(game =>
     {
         let menuItem = document.createElement("div");
-        items.appendChild(menuItem);
+        menuItems.appendChild(menuItem);
         menuItem.onclick = onMenuItemClick;
         Object.entries(game.tags).forEach(([key, value]) => 
         {
@@ -97,98 +78,8 @@ function listInMenu(games: PGN.Game[]){
             menuItem.appendChild(element);
         });
     });
-}
-gameController.callbacks.onGameStateChanged = (newState:GameState) =>{
-    switch (newState){
-        case GameState.Start:
-            enable([iconPlay, iconForward, iconGoToEnd]);
-            disable([iconGoToStart, iconRewind, iconPause]);
-            break;
-        case GameState.Play:
-            enable([iconGoToStart, iconRewind, iconPause, iconForward, iconGoToEnd]);
-            disable([iconPlay]);
-            break;
-        case GameState.Pause:
-            enable([iconGoToStart, iconRewind, iconPlay, iconForward, iconGoToEnd]);
-            disable([iconPause]);
-            break;
-        case GameState.Rewind:
-            enable([iconGoToStart, iconPlay, iconPause, iconForward, iconGoToEnd]);
-            disable([iconRewind]);
-            break;
-        case GameState.Forward:
-            enable([iconGoToStart, iconRewind, iconPlay, iconPause, iconGoToEnd]);
-            disable([iconForward]);
-            break;
-        case GameState.End:
-            enable([iconGoToStart, iconRewind]);
-            disable([iconPlay, iconPause, iconForward, iconGoToEnd]);
-            break;
+    if (menuItems.children){
+        let firstItem = menuItems.children[0] as HTMLElement;
+        showGame(firstItem);
     }
 }
-function disable(icons: HTMLImageElement[]){
-    icons.forEach(icon=>{
-        icon.classList.add("disabled");
-    });
-}
-function enable(icons: HTMLImageElement[]){
-    icons.forEach(icon=>{
-        icon.classList.remove("disabled");
-    });
-}
-gameController.callbacks.onMoveStart = (move:Move, index:number, rewind:boolean) =>{
-    if (!rewind){
-        addLogItem(index, move);
-    }
-}
-gameController.callbacks.onMoveEnd = (move:Move, index:number, rewind:boolean) =>{
-    if (rewind){
-        log.removeChild(log.lastChild as Node);
-    }
-}
-gameController.callbacks.onCapture = (color:string, fenChar:string, capturedPiece:HTMLImageElement, rect:DOMRect) =>{
-    console.log("");
-}
-function addLogItem(moveIndex:number, move:Move){
-    let moveNumber = moveIndex +1;
-    let turnNumber = Math.ceil(moveNumber / 2);
-    let isNewTurn = moveNumber % 2 !== 0;
-    let logItem = document.createElement("span");
-    let firstChar = move.san.substring(0, 1);
-    let logText = isNewTurn ? turnNumber + "." : "";
-    if (firstChar === firstChar.toUpperCase() && firstChar.toUpperCase() !== "O")
-    {
-        if (move.color === "b"){
-            firstChar = firstChar.toLowerCase();
-        }
-        firstChar = UTF.pieces[firstChar];
-        logText += firstChar + move.san.substring(1);
-    }
-    else
-        logText += move.san;
-    logItem.innerHTML = logText + " ";
-    log.appendChild(logItem);
-}
-log.onclick=(event) =>{
-    let target = event.target as HTMLElement;
-    if (target !== log){
-        let logItemIndex = Array.from(log.children).indexOf(target);
-        log.innerHTML = "";
-        if (gameController.currentGame){
-            let moves = gameController.currentGame.moves;
-            for (let moveIndex = 0; moveIndex <= logItemIndex; moveIndex++){
-                let move = moves[moveIndex];
-                addLogItem(moveIndex, move);
-            }
-            gameController.goToMove(logItemIndex);
-        }
-    }
-}
-//Testing Firestore
-// let bobby = document.getElementById("bobby");
-// bobby.addEventListener("click", loadBobby);
-// async function loadBobby(){
-//     let games = await GetAllGames("/Legends/Bobby Fischer/Games");
-//     games.reverse();
-//     games.sort((a,b) => b.Date.localeCompare(a.Date));
-// }

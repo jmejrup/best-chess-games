@@ -33,7 +33,7 @@ export default class DragAndDrop{
         let rect = event.target as HTMLElement;
         let squareIndex = parseInt(rect.getAttribute("data-index")!);
         this.sourceSquare = Shared.getSquareKeyByIndex(squareIndex, this.isRotated);
-        this.dragPiece = this.chessboard.getPiece(this.sourceSquare);
+        this.dragPiece = this.chessboard.pieceLayer.getPiece(this.sourceSquare);
         if (this.dragPiece){
             this.dragBox.appendChild(this.dragPiece.element);
             this.dragBox.style.width = this.svgRoot.clientWidth / 8 + "px";
@@ -83,7 +83,7 @@ export default class DragAndDrop{
                 this.callbackOnDrop(fenChar, from, to);
             }
             else{
-                this.chessboard.addPiece(fenChar, from);
+                this.chessboard.pieceLayer.addPiece(fenChar, from);
             }
         }
     }

@@ -9,6 +9,7 @@ export default class CordsLayer{
     constructor(svgRoot:SVGSVGElement, isRotated:boolean){
         this.isRotated = isRotated;
         this.group = SVG.createGroup();
+        this.group.classList.add("cords");
         this.group.setAttribute("font-family", "Helvetica");
         this.group.setAttribute("font-weight", "bold");
         this.group.setAttribute("fill", "rgb(30,30,30");

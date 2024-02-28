@@ -1,4 +1,5 @@
 import { CapturePieceFactory } from "./CapturePieceFactory";
+import Shared from "../chessboard/Shared";
 import { Move } from "chess.js";
 
 const pieceValues:Record<string, number> = {["p"]:1,["n"]:3,["b"]:3,["r"]:5,["q"]:9,["k"]:0,["P"]:-1,["N"]:-3,["B"]:-3,["R"]:-5,["Q"]:-9,["K"]:0};
@@ -20,27 +21,27 @@ export default class PlayerInfo{
     constructor(container:HTMLElement, fen:string, isRotated:boolean){
         this.container = container;
         this.isRotated = isRotated;
-        this.containerAbove = this.addChild(this.container, "div", "above");
+        this.containerAbove = Shared.addChild(this.container, "div", "above");
         this.container.insertBefore(this.containerAbove, this.container.firstChild);
-        this.containerBelow = this.addChild(this.container, "div", "below");
+        this.containerBelow = Shared.addChild(this.container, "div", "below");
 
-        this.blackPlayer = this.addChild(isRotated ? this.containerBelow : this.containerAbove, "div", "player black " + (isRotated ? "below" : "above"));
-        this.whitePlayer = this.addChild(isRotated ? this.containerAbove : this.containerBelow, "div", "player white " + (isRotated ? "above" : "below"));
+        this.blackPlayer = Shared.addChild(isRotated ? this.containerBelow : this.containerAbove, "div", "player black " + (isRotated ? "below" : "above"));
+        this.whitePlayer = Shared.addChild(isRotated ? this.containerAbove : this.containerBelow, "div", "player white " + (isRotated ? "above" : "below"));
 
-        let blackCapture = this.addChild(this.blackPlayer, "div", "captures");
-        let whiteCapture = this.addChild(this.whitePlayer, "div", "captures");
+        let blackCapture = Shared.addChild(this.blackPlayer, "div", "captures");
+        let whiteCapture = Shared.addChild(this.whitePlayer, "div", "captures");
 
         let record = [this.whiteCaptures, this.blackCaptures];
         [whiteCapture, blackCapture].forEach((element, index) =>{
             ["p", "n", "b", "r", "q"].forEach(type =>{
-                let child = this.addChild(element, "span", type);
+                let child = Shared.addChild(element, "span", type);
                 record[index][type] = child;
             });
         });
-        this.whiteScore = this.addChild(this.whitePlayer, "span", "score");
-        this.blackScore = this.addChild(this.blackPlayer, "span", "score");
-        this.whitePlayerName = this.addChild(this.whitePlayer, "div", "name", "White");
-        this.blackPlayerName = this.addChild(this.blackPlayer, "div", "name", "Black");
+        this.whiteScore = Shared.addChild(this.whitePlayer, "span", "score");
+        this.blackScore = Shared.addChild(this.blackPlayer, "span", "score");
+        this.whitePlayerName = Shared.addChild(this.whitePlayer, "div", "name", "White");
+        this.blackPlayerName = Shared.addChild(this.blackPlayer, "div", "name", "Black");
         if (fen){
             this.setScoreAndCaputereByFen(fen);
         }
@@ -168,13 +169,5 @@ export default class PlayerInfo{
             }
         }
         return captures;
-    }
-    private addChild(parent:HTMLElement, tag:string, className:string, text?:string){
-        let child = document.createElement(tag);
-        child.className = className;
-        if (text)
-            child.innerHTML = text;
-        parent.appendChild(child);
-        return child;
     }
 }

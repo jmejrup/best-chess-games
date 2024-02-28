@@ -25,27 +25,26 @@ export class Transitions{
     }
     cancel(){
         if (this.current){
-            let element = this.current.piece.element;
-            this.removeTransition(element);
+            this.removeTransition(this.current.piece);
 
             let castling = this.current.castling;
             if (castling){
-                this.removeTransition(castling.rook.element);
+                this.removeTransition(castling.rook);
             }
             this.current = undefined;
         }
     }
     async move(transition:TransitionInfo, duration:string, onTransitionEnd:Function){
-        this.chessboard.putOnTop(transition.piece);
-        if (transition.castling){
-            this.chessboard.putOnTop(transition.castling.rook);
-        }
+        // this.chessboard.putOnTop(transition.piece);
+        // if (transition.castling){
+        //     this.chessboard.putOnTop(transition.castling.rook);
+        // }
         this.makeChromeHappy();
         this.current = transition;
         transition.piece.element.ontransitionend = () =>{
-            this.removeTransition(transition.piece.element);
+            this.removeTransition(transition.piece);
             if (transition.castling){
-                this.removeTransition(transition.castling.rook.element);
+                this.removeTransition(transition.castling.rook);
             }
             this.current = undefined;
             onTransitionEnd();
@@ -66,11 +65,12 @@ export class Transitions{
         let cords = Shared.getCordinatesBySquareKey(dest, this.isRotated);
         element.style.transform = `translate(${cords.x * 12.5}%, ${cords.y * 12.5}%)`;
     }
-    private removeTransition(element:SVGGElement){
-        element.style.transitionProperty = "";
-        element.style.transitionDuration = "";
-        element.style.transform = "";
-        element.ontransitioncancel = null;
-        element.ontransitionend = null;
+    private removeTransition(piece:Piece){
+        piece.element.style.transitionProperty = "";
+        piece.element.style.transitionDuration = "";
+        Shared.setPosition(piece.element, piece.squareKey!, this.isRotated);
+        // element.style.transform = "";
+        piece.element.ontransitioncancel = null;
+        piece.element.ontransitionend = null;
     }
 }
