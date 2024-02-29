@@ -5,7 +5,7 @@ import Buttons from "../../components/v2/gameNavigator/Buttons";
 import History from "../../components/v2/gameNavigator/History";
 import Game from "../../components/v2/gameNavigator/Game";
 import GameResult from "../../components/v2/chessboard/GameResult";
-import * as json from "../../components/v2/data/games.json";
+import * as json from "../../components/v2/data/carlsen.json";
 import "../master.css";
 import "./index.css";
 
@@ -21,6 +21,27 @@ let input = document.getElementById("file-upload") as HTMLInputElement;
 let pgnGames: PGN.Game[] | undefined = json.games;
 listInMenu(pgnGames);
 
+function listInMenu(games: PGN.Game[]){
+    let menu = document.getElementById("menu") as HTMLElement;
+    let menuItems = menu.getElementsByClassName("items")[0];
+    menuItems.innerHTML = "";
+    games.forEach(game =>
+    {
+        let menuItem = document.createElement("div");
+        menuItems.appendChild(menuItem);
+        menuItem.onclick = onMenuItemClick;
+        Object.entries(game.tags).forEach(([key, value]) => 
+        {
+            let element = document.createElement("div");
+            element.innerHTML = key + ": " + value;
+            menuItem.appendChild(element);
+        });
+    });
+    if (menuItems.children){
+        let firstItem = menuItems.children[0] as HTMLElement;
+        showGame(firstItem);
+    }
+}
 function onMenuItemClick(event:MouseEvent){
     let menuItem = event.currentTarget as HTMLElement;
     Array.from(menuItem.parentElement!.children).forEach(item =>{
@@ -56,7 +77,7 @@ input.addEventListener("change", () =>{
                 if (pgnGames){
                     pgnGames.reverse();
                     pgnGames.sort((a,b) => b.tags["Date"].localeCompare(a.tags["Date"]));
-                    // PGN.showJSON(pgnGames.slice(0,50));
+                    PGN.showJSON(pgnGames.slice(0,50));
                     listInMenu(pgnGames);
                 }
             }
@@ -67,24 +88,3 @@ input.addEventListener("change", () =>{
         reader.readAsText(input.files[0]);
     }
 });
-function listInMenu(games: PGN.Game[]){
-    let menu = document.getElementById("menu") as HTMLElement;
-    let menuItems = menu.getElementsByClassName("items")[0];
-    menuItems.innerHTML = "";
-    games.forEach(game =>
-    {
-        let menuItem = document.createElement("div");
-        menuItems.appendChild(menuItem);
-        menuItem.onclick = onMenuItemClick;
-        Object.entries(game.tags).forEach(([key, value]) => 
-        {
-            let element = document.createElement("div");
-            element.innerHTML = key + ": " + value;
-            menuItem.appendChild(element);
-        });
-    });
-    if (menuItems.children){
-        let firstItem = menuItems.children[1] as HTMLElement;
-        showGame(firstItem);
-    }
-}

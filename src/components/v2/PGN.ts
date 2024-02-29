@@ -13,7 +13,7 @@ namespace PGN{
         text:string
     }
     export function showJSON(games:Game[]){
-        let jsonString = '{"games"["';
+        let jsonString = '{"games":[';
         games.forEach(game =>{
             jsonString += JSON.stringify(game) + "\n,";
         });
