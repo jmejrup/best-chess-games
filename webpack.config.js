@@ -2,10 +2,15 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const HtmlWebpackInlineSVGPlugin = require("html-webpack-inline-svg-plugin");
 
+module.exports = (env, argv) => {
+  if (argv.mode === 'development') {
+    config.devtool = 'inline-source-map';
+    config.devServer = { static: './dist' };
+  }
+  return config;
+};
 module.exports = {
   mode: 'development',
-  devtool: 'inline-source-map',
-  devServer: { static: './dist' },
   entry: {
     index: './src/pages/index/Index.ts',
     stockfish: './src/pages/stockfish/Stockfish.ts',

@@ -152,7 +152,9 @@ export default class GameNavigator{
         }
     }
     private async move(isForward:boolean){
-        this.hideGameResult();
+        if (!isForward || this.moveIndex !== this.game.moves.length -1){
+            this.hideGameResult();
+        }
         clearTimeout(this.timeoutId);
         if (this.transitions.current){
             let transition = this.transitions.current;
